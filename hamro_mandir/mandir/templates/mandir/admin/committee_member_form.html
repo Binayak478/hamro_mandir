@@ -1,0 +1,87 @@
+{% extends 'mandir/admin/base_admin.html' %}
+
+{% block admin_content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold">
+            {% if form.instance.pk %}सदस्य सम्पादन{% else %}नयाँ सदस्य{% endif %}
+        </h2>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Name -->
+            <div class="mb-4">
+                <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    नाम
+                </label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Post -->
+            <div class="mb-4">
+                <label for="{{ form.post.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    पद
+                </label>
+                {{ form.post }}
+                {% if form.post.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.post.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Position -->
+            <div class="mb-4">
+                <label for="{{ form.position.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    क्रम
+                </label>
+                {{ form.position }}
+                {% if form.position.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.position.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Phone Number -->
+            <div class="mb-4">
+                <label for="{{ form.phone_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    फोन नम्बर
+                </label>
+                {{ form.phone_number }}
+                {% if form.phone_number.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.phone_number.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Image -->
+            <div class="mb-6">
+                <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    तस्विर
+                </label>
+                {% if form.instance.image %}
+                <div class="mb-2">
+                    <img src="{{ form.instance.image.url }}" alt="" class="w-32 h-32 object-cover rounded-lg">
+                </div>
+                {% endif %}
+                {{ form.image }}
+                {% if form.image.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.image.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'mandir:admin_committee_list' %}" 
+                   class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    रद्द गर्नुहोस्
+                </a>
+                <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                    {% if form.instance.pk %}अपडेट गर्नुहोस्{% else %}सिर्जना गर्नुहोस्{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

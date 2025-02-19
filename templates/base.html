@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamro Mandir - {% block title %}{% endblock %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-orange-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold">Hamro Mandir</div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="{% url 'home' %}" class="hover:text-orange-200">Home</a>
+                    <a href="{% url 'events' %}" class="hover:text-orange-200">Events</a>
+                    <a href="{% url 'notices' %}" class="hover:text-orange-200">Notices</a>
+                    <a href="{% url 'blog' %}" class="hover:text-orange-200">Blog</a>
+                    <a href="{% url 'committee' %}" class="hover:text-orange-200">Committee</a>
+                    <a href="{% url 'contact' %}" class="hover:text-orange-200">Contact</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="bg-orange-700 text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">About Us</h3>
+                    <p>{{ mission_vision.description }}</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'events' %}" class="hover:text-orange-200">Events</a></li>
+                        <li><a href="{% url 'notices' %}" class="hover:text-orange-200">Notices</a></li>
+                        <li><a href="{% url 'donors' %}" class="hover:text-orange-200">Donors</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Contact Us</h3>
+                    <div class="space-y-2">
+                        <p><i class="fas fa-phone mr-2"></i> +977-XXXXXXXXX</p>
+                        <p><i class="fas fa-envelope mr-2"></i> info@hamromandir.com</p>
+                        <p><i class="fas fa-map-marker-alt mr-2"></i> Location, City, Country</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html> 

@@ -1,0 +1,43 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block admin_content %}
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Contact Messages</h2>
+    </div>
+
+    <table class="w-full">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="px-4 py-2 text-left">Name</th>
+                <th class="px-4 py-2 text-left">Email</th>
+                <th class="px-4 py-2 text-left">Subject</th>
+                <th class="px-4 py-2 text-left">Date</th>
+                <th class="px-4 py-2 text-left">Status</th>
+                <th class="px-4 py-2 text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for message in messages %}
+            <tr class="border-b {% if not message.is_read %}bg-yellow-50{% endif %}">
+                <td class="px-4 py-2">{{ message.name }}</td>
+                <td class="px-4 py-2">{{ message.email }}</td>
+                <td class="px-4 py-2">{{ message.subject }}</td>
+                <td class="px-4 py-2">{{ message.created_at|date:"Y-m-d" }}</td>
+                <td class="px-4 py-2">
+                    {% if message.is_read %}
+                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded">Read</span>
+                    {% else %}
+                    <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Unread</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-2 text-right">
+                    <a href="{% url 'contact_detail' message.pk %}" class="text-blue-600 hover:text-blue-800 mr-2">View</a>
+                    <a href="{% url 'contact_delete' message.pk %}" class="text-red-600 hover:text-red-800">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %} 

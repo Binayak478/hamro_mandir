@@ -1,0 +1,62 @@
+{% extends 'mandir/base.html' %}
+
+{% block title %}{{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <!-- Event Images Slider -->
+        {% if event.images.exists %}
+        <div class="relative h-[400px]">
+            <div class="swiper-container h-full">
+                <div class="swiper-wrapper">
+                    {% for image in event.images.all %}
+                    <div class="swiper-slide">
+                        <img src="{{ image.image.url }}" alt="{{ event.title }}" class="w-full h-full object-cover">
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="p-6">
+            <h1 class="text-3xl font-bold mb-4">{{ event.title }}</h1>
+            
+            <div class="flex items-center mb-6 text-gray-600">
+                <span class="mr-6">
+                    <i class="far fa-calendar-alt mr-2"></i>
+                    {{ event.event_date|date:"Y-m-d" }}
+                </span>
+                <span>
+                    <i class="far fa-clock mr-2"></i>
+                    {{ event.event_date|date:"H:i" }}
+                </span>
+            </div>
+
+            <div class="prose max-w-none">
+                {{ event.description|linebreaks }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Swiper JS -->
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+<script>
+    new Swiper('.swiper-container', {
+        loop: true,
+        pagination: {
+            el: '.swiper-pagination',
+        },
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+    });
+</script>
+{% endblock %} 

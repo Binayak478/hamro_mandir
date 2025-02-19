@@ -1,0 +1,86 @@
+{% extends 'mandir/base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-center mb-8">तस्विर ग्यालरी</h1>
+
+    <!-- Events with Images -->
+    <div class="space-y-12">
+        {% for event in events %}
+        {% if event.eventimage_set.exists %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold mb-2">{{ event.title }}</h2>
+                <p class="text-gray-600 mb-4">{{ event.event_date|date:"Y-m-d" }}</p>
+                
+                <!-- Image Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {% for image in event.eventimage_set.all %}
+                    <div class="relative group cursor-pointer aspect-w-4 aspect-h-3">
+                        <img src="{{ image.image.url }}" 
+                             alt="{{ event.title }}" 
+                             class="w-full h-full object-cover rounded-lg transition duration-300 group-hover:opacity-75"
+                             onclick="openLightbox('{{ image.image.url }}', '{{ event.title }}')"
+                        >
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% empty %}
+        <div class="text-center text-gray-500">
+            कुनै तस्विर उपलब्ध छैन
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="fixed inset-0 bg-black bg-opacity-90 hidden z-50">
+        <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white text-4xl">&times;</button>
+        <div class="flex items-center justify-center h-full">
+            <img id="lightbox-image" src="" alt="" class="max-h-[90vh] max-w-[90vw] object-contain">
+        </div>
+        <div class="absolute bottom-4 left-0 right-0 text-center">
+            <h3 id="lightbox-title" class="text-white text-xl"></h3>
+        </div>
+    </div>
+</div>
+
+<script>
+function openLightbox(imageUrl, title) {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImage = document.getElementById('lightbox-image');
+    const lightboxTitle = document.getElementById('lightbox-title');
+    
+    lightboxImage.src = imageUrl;
+    lightboxTitle.textContent = title;
+    lightbox.classList.remove('hidden');
+    
+    // Prevent scrolling when lightbox is open
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    const lightbox = document.getElementById('lightbox');
+    lightbox.classList.add('hidden');
+    
+    // Restore scrolling
+    document.body.style.overflow = '';
+}
+
+// Close lightbox when clicking outside the image
+document.getElementById('lightbox').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeLightbox();
+    }
+});
+
+// Close lightbox with escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeLightbox();
+    }
+});
+</script>
+{% endblock %} 

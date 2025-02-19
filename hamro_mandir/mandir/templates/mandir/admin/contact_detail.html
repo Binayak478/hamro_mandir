@@ -1,0 +1,57 @@
+{% extends 'mandir/admin/base_admin.html' %}
+
+{% block admin_content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold">सम्पर्क विवरण</h2>
+        <div class="space-x-2">
+            <a href="{% url 'mandir:contact_toggle_read' contact.pk %}" 
+               class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                {% if contact.is_read %}नपढिएको बनाउनुहोस्{% else %}पढिएको बनाउनुहोस्{% endif %}
+            </a>
+            <a href="{% url 'mandir:contact_delete' contact.pk %}" 
+               class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                मेटाउनुहोस्
+            </a>
+        </div>
+    </div>
+
+    <!-- Contact Details -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">नाम</h3>
+                <p class="mt-1 text-lg">{{ contact.name }}</p>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">इमेल</h3>
+                <p class="mt-1 text-lg">{{ contact.email }}</p>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <h3 class="text-sm font-medium text-gray-500">विषय</h3>
+            <p class="mt-1 text-lg">{{ contact.subject }}</p>
+        </div>
+
+        <div class="mt-6">
+            <h3 class="text-sm font-medium text-gray-500">सन्देश</h3>
+            <div class="mt-1 prose max-w-none">
+                {{ contact.message|linebreaks }}
+            </div>
+        </div>
+
+        <div class="mt-6 text-sm text-gray-500">
+            प्राप्त मिति: {{ contact.created_at|date:"Y-m-d H:i" }}
+        </div>
+    </div>
+
+    <div class="flex justify-end">
+        <a href="{% url 'mandir:admin_contact_list' %}" 
+           class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+            फिर्ता जानुहोस्
+        </a>
+    </div>
+</div>
+{% endblock %} 

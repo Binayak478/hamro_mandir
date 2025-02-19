@@ -1,0 +1,70 @@
+{% extends 'mandir/base.html' %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                व्यवस्थापक लगइन
+            </h2>
+        </div>
+        <form class="mt-8 space-y-6" method="POST">
+            {% csrf_token %}
+            
+            {% if messages %}
+            <div class="rounded-md bg-red-50 p-4">
+                <div class="flex">
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">
+                            {% for message in messages %}
+                                {{ message }}
+                            {% endfor %}
+                        </h3>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if form.non_field_errors %}
+            <div class="rounded-md bg-red-50 p-4">
+                <div class="flex">
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">
+                            {{ form.non_field_errors.0 }}
+                        </h3>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div>
+                    <label for="{{ form.username.id_for_label }}" class="sr-only">प्रयोगकर्ता नाम</label>
+                    <input id="{{ form.username.id_for_label }}" 
+                           name="{{ form.username.html_name }}" 
+                           type="text" 
+                           required 
+                           class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm" 
+                           placeholder="प्रयोगकर्ता नाम">
+                </div>
+                <div>
+                    <label for="{{ form.password.id_for_label }}" class="sr-only">पासवर्ड</label>
+                    <input id="{{ form.password.id_for_label }}" 
+                           name="{{ form.password.html_name }}" 
+                           type="password" 
+                           required 
+                           class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm" 
+                           placeholder="पासवर्ड">
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" 
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                    लगइन गर्नुहोस्
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

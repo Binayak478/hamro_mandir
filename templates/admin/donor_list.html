@@ -1,0 +1,38 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block admin_content %}
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Donors</h2>
+        <a href="{% url 'donor_create' %}" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">
+            Add New Donor
+        </a>
+    </div>
+
+    <table class="w-full">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="px-4 py-2 text-left">Name</th>
+                <th class="px-4 py-2 text-left">Amount</th>
+                <th class="px-4 py-2 text-left">Purpose</th>
+                <th class="px-4 py-2 text-left">Donation Date</th>
+                <th class="px-4 py-2 text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for donor in donors %}
+            <tr class="border-b">
+                <td class="px-4 py-2">{{ donor.name }}</td>
+                <td class="px-4 py-2">Rs. {{ donor.amount }}</td>
+                <td class="px-4 py-2">{{ donor.purpose }}</td>
+                <td class="px-4 py-2">{{ donor.donation_date }}</td>
+                <td class="px-4 py-2 text-right">
+                    <a href="{% url 'donor_update' donor.pk %}" class="text-blue-600 hover:text-blue-800 mr-2">Edit</a>
+                    <a href="{% url 'donor_delete' donor.pk %}" class="text-red-600 hover:text-red-800">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %} 

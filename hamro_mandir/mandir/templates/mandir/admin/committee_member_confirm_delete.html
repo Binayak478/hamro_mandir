@@ -1,0 +1,45 @@
+{% extends 'mandir/admin/base_admin.html' %}
+
+{% block admin_content %}
+<div class="bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-2xl font-bold mb-6">समिति सदस्य मेटाउने पुष्टि</h2>
+    
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <p class="text-red-700">
+            के तपाईं निश्चित हुनुहुन्छ कि तपाईं यो समिति सदस्य मेटाउन चाहनुहुन्छ?
+            <strong>{{ member.name }}</strong>
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+            <h3 class="font-bold text-gray-700 mb-2">नाम</h3>
+            <p>{{ member.name }}</p>
+        </div>
+        <div>
+            <h3 class="font-bold text-gray-700 mb-2">पद</h3>
+            <p>{{ member.post }}</p>
+        </div>
+        <div>
+            <h3 class="font-bold text-gray-700 mb-2">कार्य समिति</h3>
+            <p>{{ member.committee.name }}</p>
+        </div>
+        <div>
+            <h3 class="font-bold text-gray-700 mb-2">फोन नम्बर</h3>
+            <p>{{ member.phone_number|default:"उपलब्ध छैन" }}</p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="flex justify-end space-x-4">
+            <a href="{% url 'mandir:admin_committee_list' %}" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                रद्द गर्नुहोस्
+            </a>
+            <button type="submit" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                मेटाउनुहोस्
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %} 

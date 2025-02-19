@@ -1,0 +1,66 @@
+{% extends 'mandir/base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="{% url 'mandir:admin_dashboard' %}" class="text-xl font-bold text-orange-600">
+                        प्रशासक ड्यासबोर्ड
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-600">{{ request.user.get_full_name }}</span>
+                    <a href="{% url 'mandir:logout' %}" class="text-red-600 hover:text-red-700">
+                        लग आउट
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar and Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex flex-col md:flex-row gap-8">
+            <!-- Sidebar -->
+            <div class="w-full md:w-64 space-y-2">
+                <a href="{% url 'mandir:admin_dashboard' %}" 
+                   class="block px-4 py-2 rounded-lg {% if request.resolver_match.url_name == 'admin_dashboard' %}bg-orange-100 text-orange-700{% else %}hover:bg-gray-50{% endif %}">
+                    ड्यासबोर्ड
+                </a>
+                <a href="{% url 'mandir:admin_event_list' %}" 
+                   class="block px-4 py-2 rounded-lg {% if 'event' in request.resolver_match.url_name %}bg-orange-100 text-orange-700{% else %}hover:bg-gray-50{% endif %}">
+                    कार्यक्रमहरू
+                </a>
+                <a href="{% url 'mandir:admin_notice_list' %}" 
+                   class="block px-4 py-2 rounded-lg {% if 'notice' in request.resolver_match.url_name %}bg-orange-100 text-orange-700{% else %}hover:bg-gray-50{% endif %}">
+                    सूचनाहरू
+                </a>
+                <a href="{% url 'mandir:admin_blog_list' %}" 
+                   class="block px-4 py-2 rounded-lg {% if 'blog' in request.resolver_match.url_name %}bg-orange-100 text-orange-700{% else %}hover:bg-gray-50{% endif %}">
+                    ब्लगहरू
+                </a>
+                <a href="{% url 'mandir:admin_committee_list' %}" 
+                   class="block px-4 py-2 rounded-lg {% if 'committee' in request.resolver_match.url_name %}bg-orange-100 text-orange-700{% else %}hover:bg-gray-50{% endif %}">
+                    कार्य समिति
+                </a>
+                <a href="{% url 'mandir:admin_donor_list' %}" 
+                   class="block px-4 py-2 rounded-lg {% if 'donor' in request.resolver_match.url_name %}bg-orange-100 text-orange-700{% else %}hover:bg-gray-50{% endif %}">
+                    दाताहरू
+                </a>
+                <a href="{% url 'mandir:admin_contact_list' %}" 
+                   class="block px-4 py-2 rounded-lg {% if 'contact' in request.resolver_match.url_name %}bg-orange-100 text-orange-700{% else %}hover:bg-gray-50{% endif %}">
+                    सन्देशहरू
+                </a>
+            </div>
+
+            <!-- Main Content -->
+            <div class="flex-1">
+                {% block admin_content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

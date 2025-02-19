@@ -1,0 +1,63 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block admin_content %}
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Committees</h2>
+        <a href="{% url 'committee_create' %}" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">
+            Add New Committee
+        </a>
+    </div>
+
+    <table class="w-full mb-8">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="px-4 py-2 text-left">Name</th>
+                <th class="px-4 py-2 text-left">Duration</th>
+                <th class="px-4 py-2 text-left">Status</th>
+                <th class="px-4 py-2 text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for committee in committees %}
+            <tr class="border-b">
+                <td class="px-4 py-2">{{ committee.name }}</td>
+                <td class="px-4 py-2">{{ committee.start_date }} to {{ committee.end_date }}</td>
+                <td class="px-4 py-2">
+                    {% if committee.is_current %}
+                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded">Current</span>
+                    {% else %}
+                    <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded">Past</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-2 text-right">
+                    <a href="{% url 'committee_update' committee.pk %}" class="text-blue-600 hover:text-blue-800 mr-2">Edit</a>
+                    <a href="{% url 'committee_delete' committee.pk %}" class="text-red-600 hover:text-red-800">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3 class="text-xl font-bold mb-4">Committee Members</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for member in committee_members %}
+        <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center mb-2">
+                {% if member.image %}
+                <img src="{{ member.image.url }}" alt="{{ member.name }}" class="w-12 h-12 rounded-full mr-3">
+                {% endif %}
+                <div>
+                    <h4 class="font-bold">{{ member.name }}</h4>
+                    <p class="text-gray-600">{{ member.post }}</p>
+                </div>
+            </div>
+            <div class="mt-2 flex justify-end">
+                <a href="{% url 'committee_member_update' member.pk %}" class="text-blue-600 hover:text-blue-800 mr-2">Edit</a>
+                <a href="{% url 'committee_member_delete' member.pk %}" class="text-red-600 hover:text-red-800">Delete</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

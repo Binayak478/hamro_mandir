@@ -1,0 +1,88 @@
+{% extends 'mandir/admin/base_admin.html' %}
+
+{% block admin_content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold">कार्य समिति व्यवस्थापन</h2>
+        <a href="{% url 'mandir:committee_create' %}" 
+           class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+            नयाँ कार्य समिति थप्नुहोस्
+        </a>
+    </div>
+
+    <!-- Committees List -->
+    <div class="space-y-6">
+        {% for committee in committees %}
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-xl font-bold">{{ committee.name }}</h3>
+                    <p class="text-gray-500">
+                        {{ committee.start_date|date:"Y-m-d" }} - 
+                        {% if committee.end_date %}
+                            {{ committee.end_date|date:"Y-m-d" }}
+                        {% else %}
+                            हालसम्म
+                        {% endif %}
+                    </p>
+                    {% if committee.is_current %}
+                    <span class="inline-block mt-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                        वर्तमान समिति
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="space-x-2">
+                    <a href="{% url 'mandir:committee_update' committee.pk %}" 
+                       class="text-orange-600 hover:text-orange-900">सम्पादन</a>
+                    <a href="{% url 'mandir:committee_delete' committee.pk %}" 
+                       class="text-red-600 hover:text-red-900">मेटाउनुहोस्</a>
+                </div>
+            </div>
+
+            <!-- Committee Members -->
+            <div class="mt-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-lg font-medium">समिति सदस्यहरू</h4>
+                    <a href="{% url 'mandir:committee_member_create' committee.pk %}" 
+                       class="text-orange-600 hover:text-orange-900">
+                        नयाँ सदस्य थप्नुहोस्
+                    </a>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for member in committee.committeemember_set.all|dictsortreversed:"position" %}
+                    <div class="border rounded-lg p-4">
+                        {% if member.image %}
+                        <img src="{{ member.image.url }}" alt="" class="w-24 h-24 object-cover rounded-full mx-auto mb-4">
+                        {% endif %}
+                        <h5 class="font-bold text-center">{{ member.name }}</h5>
+                        <p class="text-orange-600 text-center">{{ member.post }}</p>
+                        {% if member.phone_number %}
+                        <p class="text-gray-600 text-center mt-2">
+                            <i class="fas fa-phone mr-2"></i>{{ member.phone_number }}
+                        </p>
+                        {% endif %}
+                        <div class="mt-4 text-center space-x-2">
+                            <a href="{% url 'mandir:committee_member_update' member.pk %}" 
+                               class="text-orange-600 hover:text-orange-900">सम्पादन</a>
+                            <a href="{% url 'mandir:committee_member_delete' member.pk %}" 
+                               class="text-red-600 hover:text-red-900">मेटाउनुहोस्</a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-span-3 text-center text-gray-500">
+                        कुनै सदस्य छैन
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
+            कुनै कार्य समिति छैन
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 
