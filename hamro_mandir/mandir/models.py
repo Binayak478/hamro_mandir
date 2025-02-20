@@ -118,7 +118,7 @@ class MissionVision(models.Model):
     
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
     point = models.TextField()
-    order = models.IntegerField(default=0)  # For controlling the display order
+    order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
