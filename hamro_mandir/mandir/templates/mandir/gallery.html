@@ -7,7 +7,7 @@
     <!-- Events with Images -->
     <div class="space-y-12">
         {% for event in events %}
-        {% if event.eventimage_set.exists %}
+        {% if event.images.exists %}
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
             <div class="p-6">
                 <h2 class="text-2xl font-bold mb-2">{{ event.title }}</h2>
@@ -15,7 +15,7 @@
                 
                 <!-- Image Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {% for image in event.eventimage_set.all %}
+                    {% for image in event.images.all %}
                     <div class="relative group cursor-pointer aspect-w-4 aspect-h-3">
                         <img src="{{ image.image.url }}" 
                              alt="{{ event.title }}" 

@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Event, Notice, CommitteeMember, Committee, Contact, Blog, Donor, EventImage
+from .models import Event, Notice, CommitteeMember, Committee, Contact, Blog, Donor, EventImage, About, MissionVision
 from .forms import (
     EventForm, EventImageFormSet, 
     NoticeForm, BlogForm, 
     CommitteeForm, CommitteeMemberForm,
-    DonorForm, ContactForm
+    DonorForm, ContactForm,
+    AboutForm, MissionVisionForm
 )
 from .decorators import admin_required
 from django.contrib import messages
@@ -13,6 +14,8 @@ from django.utils import timezone
 from datetime import date, datetime
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
+import pytz
+from nepali_datetime import date as nepali_date
 
 # herne matra
 def home(request):
@@ -93,27 +96,42 @@ def event_create(request):
         if form.is_valid():
             event = form.save(commit=False)
             event.user = request.user
+            
             try:
-                event_year = int(request.POST.get('event_year'))
-                event_month = int(request.POST.get('event_month'))
-                event_day = int(request.POST.get('event_day'))
-                event_hour = int(request.POST.get('event_hour'))
-                event_minute = int(request.POST.get('event_minute'))
-                event.event_date = datetime(event_year, event_month, event_day, 
-                                         event_hour, event_minute)
-            except (ValueError, TypeError):
-                form.add_error(None, "मिति/समय अमान्य छ")
-                return render(request, 'mandir/admin/event_form.html', {'form': form})
+                # Get date components from the form
+                year = int(request.POST.get('year'))
+                month = int(request.POST.get('month'))
+                day = int(request.POST.get('day'))
 
-            event.save()
-            
-            # images
-            images = request.FILES.getlist('images')
-            for image in images:
-                EventImage.objects.create(event=event, image=image)
-            
-            messages.success(request, 'कार्यक्रम सफलतापूर्वक सिर्जना गरियो')
-            return redirect('mandir:admin_event_list')
+                # Convert Nepali date to Gregorian
+                nep_date = nepali_date(year, month, day)
+                greg_date = nep_date.to_datetime_date()
+                
+                # Get current time in Nepal timezone
+                nepal_tz = pytz.timezone('Asia/Kathmandu')
+                current_nepal_time = datetime.now(nepal_tz)
+                
+                # Combine date with current Nepal time
+                greg_datetime = datetime.combine(greg_date, current_nepal_time.time())
+                
+                # Convert to UTC
+                local_dt = nepal_tz.localize(greg_datetime)
+                utc_dt = local_dt.astimezone(pytz.UTC)
+                
+                event.event_date = utc_dt
+                event.save()
+                
+                # Handle images
+                images = request.FILES.getlist('images')
+                for image in images:
+                    EventImage.objects.create(event=event, image=image)
+                
+                messages.success(request, 'कार्यक्रम सफलतापूर्वक सिर्जना गरियो')
+                return redirect('mandir:admin_event_list')
+                
+            except Exception as e:
+                form.add_error(None, f"मिति रूपान्तरण त्रुटि: {str(e)}")
+                return render(request, 'mandir/admin/event_form.html', {'form': form})
     else:
         form = EventForm()
     
@@ -238,7 +256,6 @@ def committee_create(request):
                 form.add_error(None, "अन्त्य मिति अमान्य छ")
                 return render(request, 'mandir/admin/committee_form.html', {'form': form})
 
-            # If this is marked as current committee, unmark others
             if committee.is_current:
                 Committee.objects.filter(is_current=True).update(is_current=False)
 
@@ -258,7 +275,7 @@ def committee_update(request, pk):
         if form.is_valid():
             committee = form.save(commit=False)
             
-            # Handle start date
+#start date ko lagi
             try:
                 start_year = int(request.POST.get('start_year'))
                 start_month = int(request.POST.get('start_month'))
@@ -268,7 +285,7 @@ def committee_update(request, pk):
                 form.add_error(None, "सुरु मिति अमान्य छ")
                 return render(request, 'mandir/admin/committee_form.html', {'form': form})
 
-            # Handle end date (optional)
+#end date ko lagi
             try:
                 end_year = request.POST.get('end_year')
                 end_month = request.POST.get('end_month')
@@ -281,7 +298,6 @@ def committee_update(request, pk):
                 form.add_error(None, "अन्त्य मिति अमान्य छ")
                 return render(request, 'mandir/admin/committee_form.html', {'form': form})
 
-            # If this is marked as current committee, unmark others
             if committee.is_current and not Committee.objects.get(pk=pk).is_current:
                 Committee.objects.filter(is_current=True).update(is_current=False)
 
@@ -486,5 +502,100 @@ def logout_view(request):
     return redirect('mandir:home')
 
 def gallery_view(request):
-    events = Event.objects.filter(eventimage__isnull=False).distinct().order_by('-event_date')
+    # Get events that have images, ordered by event date
+    events = Event.objects.filter(images__isnull=False).distinct().order_by('-event_date')
     return render(request, 'mandir/gallery.html', {'events': events})
+
+def about_view(request):
+    about = About.objects.first()
+    return render(request, 'mandir/about.html', {'about': about})
+
+@login_required
+def admin_about_list(request):
+    abouts = About.objects.all().order_by('-created_at')
+    return render(request, 'mandir/admin/about_list.html', {'abouts': abouts})
+
+@login_required
+def about_create(request):
+    if request.method == 'POST':
+        form = AboutForm(request.POST, request.FILES)
+        if form.is_valid():
+            about = form.save(commit=False)
+            about.user = request.user
+            about.save()
+            messages.success(request, 'हाम्रो बारेमा सफलतापूर्वक सिर्जना गरियो')
+            return redirect('mandir:admin_about_list')
+    else:
+        form = AboutForm()
+    return render(request, 'mandir/admin/about_form.html', {'form': form})
+
+@login_required
+def about_update(request, pk):
+    about = get_object_or_404(About, pk=pk)
+    if request.method == 'POST':
+        form = AboutForm(request.POST, request.FILES, instance=about)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'हाम्रो बारेमा सफलतापूर्वक अपडेट गरियो')
+            return redirect('mandir:admin_about_list')
+    else:
+        form = AboutForm(instance=about)
+    return render(request, 'mandir/admin/about_form.html', {'form': form})
+
+@login_required
+def about_delete(request, pk):
+    about = get_object_or_404(About, pk=pk)
+    about.delete()
+    messages.success(request, 'हाम्रो बारेमा सफलतापूर्वक मेटाइयो')
+    return redirect('mandir:admin_about_list')
+
+def mission_vision_view(request):
+    missions = MissionVision.objects.filter(type='mission')
+    visions = MissionVision.objects.filter(type='vision')
+    return render(request, 'mandir/mission_vision.html', {
+        'missions': missions,
+        'visions': visions
+    })
+
+@login_required
+def admin_mission_vision_list(request):
+    missions = MissionVision.objects.filter(type='mission')
+    visions = MissionVision.objects.filter(type='vision')
+    return render(request, 'mandir/admin/mission_vision_list.html', {
+        'missions': missions,
+        'visions': visions
+    })
+
+@login_required
+def mission_vision_create(request):
+    if request.method == 'POST':
+        form = MissionVisionForm(request.POST)
+        if form.is_valid():
+            point = form.save(commit=False)
+            point.user = request.user
+            point.save()
+            messages.success(request, 'बुँदा सफलतापूर्वक सिर्जना गरियो')
+            return redirect('mandir:admin_mission_vision_list')
+    else:
+        form = MissionVisionForm()
+    return render(request, 'mandir/admin/mission_vision_form.html', {'form': form})
+
+@login_required
+def mission_vision_update(request, pk):
+    point = get_object_or_404(MissionVision, pk=pk)
+    if request.method == 'POST':
+        form = MissionVisionForm(request.POST, instance=point)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'बुँदा सफलतापूर्वक अपडेट गरियो')
+            return redirect('mandir:admin_mission_vision_list')
+    else:
+        form = MissionVisionForm(instance=point)
+    return render(request, 'mandir/admin/mission_vision_form.html', {'form': form})
+
+@login_required
+def mission_vision_delete(request, pk):
+    point = get_object_or_404(MissionVision, pk=pk)
+    point.delete()
+    messages.success(request, 'बुँदा सफलतापूर्वक मेटाइयो')
+    return redirect('mandir:admin_mission_vision_list')

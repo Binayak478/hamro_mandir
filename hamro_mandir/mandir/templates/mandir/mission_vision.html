@@ -1,0 +1,35 @@
+{% extends 'mandir/base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto space-y-12">
+        <!-- Mission Section -->
+        <div>
+            <h2 class="text-3xl font-bold text-center mb-6">हाम्रो लक्ष्य</h2>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <ol class="list-decimal list-inside space-y-4">
+                    {% for mission in missions %}
+                    <li class="text-lg">{{ mission.point }}</li>
+                    {% empty %}
+                    <li class="text-gray-500">कुनै लक्ष्य उपलब्ध छैन</li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+
+        <!-- Vision Section -->
+        <div>
+            <h2 class="text-3xl font-bold text-center mb-6">हाम्रो दृष्टिकोण</h2>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <ol class="list-decimal list-inside space-y-4">
+                    {% for vision in visions %}
+                    <li class="text-lg">{{ vision.point }}</li>
+                    {% empty %}
+                    <li class="text-gray-500">कुनै दृष्टिकोण उपलब्ध छैन</li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

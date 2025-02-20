@@ -54,6 +54,14 @@
                    class="block px-4 py-2 rounded-lg {% if 'contact' in request.resolver_match.url_name %}bg-orange-100 text-orange-700{% else %}hover:bg-gray-50{% endif %}">
                     सन्देशहरू
                 </a>
+                <a href="{% url 'mandir:admin_about_list' %}" 
+                class="block px-4 py-2 rounded-lg {% if 'contact' in request.resolver_match.url_name %}bg-orange-100 text-orange-700{% else %}hover:bg-gray-50{% endif %}">
+                हाम्रो बारेमा
+             </a>
+             <a href="{% url 'mandir:admin_mission_vision_list' %}" 
+             class="block px-4 py-2 rounded-lg {% if 'contact' in request.resolver_match.url_name %}bg-orange-100 text-orange-700{% else %}hover:bg-gray-50{% endif %}">
+             लक्ष्य व्यवस्थापन
+          </a>
             </div>
 
             <!-- Main Content -->

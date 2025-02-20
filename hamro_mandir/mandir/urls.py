@@ -22,7 +22,7 @@ urlpatterns = [
     # admin ko dashboard
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
 
-    # admin ko manage section
+    # admin ko section
     path('manage/events/', views.admin_event_list, name='admin_event_list'),
     path('manage/events/create/', views.event_create, name='event_create'),
     path('manage/events/<int:pk>/update/', views.event_update, name='event_update'),
@@ -63,4 +63,15 @@ urlpatterns = [
     path('manage/contacts/<int:pk>/delete/', views.contact_delete, name='contact_delete'),
 
     path('gallery/', views.gallery_view, name='gallery'),
+    path('about/', views.about_view, name='about'),
+    path('manage/about/', views.admin_about_list, name='admin_about_list'),
+    path('manage/about/create/', views.about_create, name='about_create'),
+    path('manage/about/<int:pk>/update/', views.about_update, name='about_update'),
+    path('manage/about/<int:pk>/delete/', views.about_delete, name='about_delete'),
+
+    path('mission-vision/', views.mission_vision_view, name='mission_vision'),
+    path('manage/mission-vision/', views.admin_mission_vision_list, name='admin_mission_vision_list'),
+    path('manage/mission-vision/create/', views.mission_vision_create, name='mission_vision_create'),
+    path('manage/mission-vision/<int:pk>/update/', views.mission_vision_update, name='mission_vision_update'),
+    path('manage/mission-vision/<int:pk>/delete/', views.mission_vision_delete, name='mission_vision_delete'),
 ] 

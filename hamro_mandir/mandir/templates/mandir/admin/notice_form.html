@@ -34,6 +34,21 @@
                 {% endif %}
             </div>
 
+            <div class="mb-6">
+                <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    तस्विर
+                </label>
+                {% if form.instance.image %}
+                <div class="mb-2">
+                    <img src="{{ form.instance.image.url }}" alt="" class="w-32 h-32 object-cover rounded-lg">
+                </div>
+                {% endif %}
+                {{ form.image }}
+                {% if form.image.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.image.errors.0 }}</p>
+                {% endif %}
+            </div>
+
             <div class="flex justify-end space-x-4">
                 <a href="{% url 'mandir:admin_notice_list' %}" 
                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">

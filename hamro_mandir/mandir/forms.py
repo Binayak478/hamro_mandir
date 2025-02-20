@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Event, EventImage, Notice, Blog, Committee, CommitteeMember, Donor, Contact
+from .models import Event, EventImage, Notice, Blog, Committee, CommitteeMember, Donor, Contact, About, MissionVision
 
 class EventForm(forms.ModelForm):
     event_year = forms.IntegerField(min_value=1900, max_value=2100)
@@ -50,17 +50,20 @@ EventImageFormSet = inlineformset_factory(
 class NoticeForm(forms.ModelForm):
     class Meta:
         model = Notice
-        fields = ['title', 'description']
+        fields = ['title', 'description', 'image']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['title'].widget.attrs.update({
-            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
-        })
-        self.fields['description'].widget = forms.Textarea(attrs={
-            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500',
-            'rows': 4
-        })
+        for field in self.fields:
+            if field == 'description':
+                self.fields[field].widget = forms.Textarea(attrs={
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500',
+                    'rows': 6
+                })
+            else:
+                self.fields[field].widget.attrs.update({
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
+                })
 
 class BlogForm(forms.ModelForm):
     class Meta:
@@ -153,4 +156,40 @@ class ContactForm(forms.ModelForm):
             else:
                 self.fields[field].widget.attrs.update({
                     'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
-                }) 
+                })
+
+class AboutForm(forms.ModelForm):
+    class Meta:
+        model = About
+        fields = ['title', 'description', 'image']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            if field == 'description':
+                self.fields[field].widget = forms.Textarea(attrs={
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500',
+                    'rows': 6
+                })
+            else:
+                self.fields[field].widget.attrs.update({
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
+                })
+
+class MissionVisionForm(forms.ModelForm):
+    class Meta:
+        model = MissionVision
+        fields = ['type', 'point', 'order']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['type'].widget.attrs.update({
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
+        })
+        self.fields['point'].widget = forms.Textarea(attrs={
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500',
+            'rows': 3
+        })
+        self.fields['order'].widget.attrs.update({
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
+        }) 

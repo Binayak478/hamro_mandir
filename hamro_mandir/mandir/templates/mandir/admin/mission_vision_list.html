@@ -1,0 +1,68 @@
+{% extends 'mandir/admin/base_admin.html' %}
+
+{% block admin_content %}
+<div class="space-y-8">
+    <!-- Mission Section -->
+    <div>
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">लक्ष्य व्यवस्थापन</h2>
+            <a href="{% url 'mandir:mission_vision_create' %}" 
+               class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                नयाँ बुँदा थप्नुहोस्
+            </a>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">क्रम</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">बुँदा</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">कार्यहरू</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for mission in missions %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ mission.order }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ mission.point }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                            <a href="{% url 'mandir:mission_vision_update' mission.pk %}" class="text-orange-600 hover:text-orange-900">सम्पादन</a>
+                            <a href="{% url 'mandir:mission_vision_delete' mission.pk %}" class="text-red-600 hover:text-red-900">मेटाउनुहोस्</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Vision Section -->
+    <div>
+        <h2 class="text-2xl font-bold mb-4">दृष्टिकोण व्यवस्थापन</h2>
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">क्रम</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">बुँदा</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">कार्यहरू</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for vision in visions %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ vision.order }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ vision.point }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                            <a href="{% url 'mandir:mission_vision_update' vision.pk %}" class="text-orange-600 hover:text-orange-900">सम्पादन</a>
+                            <a href="{% url 'mandir:mission_vision_delete' vision.pk %}" class="text-red-600 hover:text-red-900">मेटाउनुहोस्</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} 

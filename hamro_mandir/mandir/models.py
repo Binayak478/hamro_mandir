@@ -52,14 +52,9 @@ class Event(models.Model):
         return self.title
 
 class EventImage(models.Model):
-    event = models.ForeignKey(Event, related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='events/', verbose_name='तस्विर')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='event_images/')
     created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['created_at']
-        verbose_name = 'कार्यक्रम तस्विर'
-        verbose_name_plural = 'कार्यक्रम तस्विरहरू'
 
     def __str__(self):
         return f"Image for {self.event.title}"
@@ -116,22 +111,23 @@ class Donor(models.Model):
         return f"{self.name} - Rs. {self.amount}"
 
 class MissionVision(models.Model):
-    TYPES = [
+    TYPE_CHOICES = [
         ('mission', 'Mission'),
         ('vision', 'Vision')
     ]
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    category = models.CharField(max_length=10, choices=TYPES)
+    
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    point = models.TextField()
+    order = models.IntegerField(default=0)  # For controlling the display order
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name = 'Mission Vision'
-        verbose_name_plural = 'Mission Vision'
+        ordering = ['type', 'order']
 
     def __str__(self):
-        return f"{self.category}: {self.title}"
+        return f"{self.get_type_display()} Point {self.order}"
 
 class Contact(models.Model):
     name = models.CharField(max_length=100)
@@ -162,3 +158,14 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.subject} - {self.name}"
+
+class About(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    image = models.ImageField(upload_to='about_images/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.title

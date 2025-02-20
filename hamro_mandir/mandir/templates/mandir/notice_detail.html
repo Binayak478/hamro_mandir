@@ -26,6 +26,12 @@
             <div class="prose max-w-none">
                 {{ notice.description|linebreaks }}
             </div>
+            <div> 
+                {% if notice.image %}
+                <img src="{{ notice.image.url }}" alt="{{ notice.title }}" class="w-full h-full object-cover">
+                {% endif %}
+
+            </div>
         </div>
     </div>
 </div>
