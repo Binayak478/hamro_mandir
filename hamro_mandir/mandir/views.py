@@ -16,6 +16,15 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 import pytz
 from nepali_datetime import date as nepali_date
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.template.loader import render_to_string
+from django.contrib.auth import get_user_model
+from django.urls import reverse
+
+User = get_user_model()
 
 # herne matra
 def home(request):
@@ -93,68 +102,145 @@ def admin_event_list(request):
 def event_create(request):
     if request.method == 'POST':
         form = EventForm(request.POST)
-        if form.is_valid():
-            event = form.save(commit=False)
-            event.user = request.user
-            
-            try:
-                # Get date components from the form
-                year = int(request.POST.get('year'))
-                month = int(request.POST.get('month'))
-                day = int(request.POST.get('day'))
+        try:
+            # Get date components from the form
+            year = int(request.POST.get('event_year', 0))
+            month = int(request.POST.get('event_month', 0))
+            day = int(request.POST.get('event_day', 0))
 
-                # Convert Nepali date to Gregorian
-                nep_date = nepali_date(year, month, day)
-                greg_date = nep_date.to_datetime_date()
+            # Validate date components
+            if not (2000 <= year <= 2100):
+                messages.error(request, "कृपया मान्य वर्ष प्रविष्ट गर्नुहोस्")
+                return render(request, 'mandir/admin/event_form.html', {'form': form})
+            
+            if not (1 <= month <= 12):
+                messages.error(request, "कृपया मान्य महिना प्रविष्ट गर्नुहोस्")
+                return render(request, 'mandir/admin/event_form.html', {'form': form})
+            
+            if not (1 <= day <= 32):
+                messages.error(request, "कृपया मान्य दिन प्रविष्ट गर्नुहोस्")
+                return render(request, 'mandir/admin/event_form.html', {'form': form})
+
+            if form.is_valid():
+                event = form.save(commit=False)
+                event.user = request.user
                 
                 # Get current time in Nepal timezone
                 nepal_tz = pytz.timezone('Asia/Kathmandu')
-                current_nepal_time = datetime.now(nepal_tz)
+                current_time = datetime.now(nepal_tz)
                 
-                # Combine date with current Nepal time
-                greg_datetime = datetime.combine(greg_date, current_nepal_time.time())
+                try:
+                    # Create datetime object with the provided date and current time
+                    event_datetime = datetime(
+                        year=year,
+                        month=month,
+                        day=day,
+                        hour=current_time.hour,
+                        minute=current_time.minute,
+                        second=current_time.second,
+                        tzinfo=nepal_tz
+                    )
+                    
+                    # Convert to UTC for storage
+                    utc_dt = event_datetime.astimezone(pytz.UTC)
+                    event.event_date = utc_dt
+                    event.save()
+                    
+                    # Handle images
+                    images = request.FILES.getlist('images')
+                    for image in images:
+                        EventImage.objects.create(event=event, image=image)
+                    
+                    messages.success(request, 'कार्यक्रम सफलतापूर्वक सिर्जना गरियो')
+                    return redirect('mandir:admin_event_list')
+                    
+                except ValueError as e:
+                    messages.error(request, "कृपया मान्य मिति प्रविष्ट गर्नुहोस्")
+                    return render(request, 'mandir/admin/event_form.html', {'form': form})
                 
-                # Convert to UTC
-                local_dt = nepal_tz.localize(greg_datetime)
-                utc_dt = local_dt.astimezone(pytz.UTC)
+            else:
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f"{field}: {error}")
                 
-                event.event_date = utc_dt
-                event.save()
-                
-                # Handle images
-                images = request.FILES.getlist('images')
-                for image in images:
-                    EventImage.objects.create(event=event, image=image)
-                
-                messages.success(request, 'कार्यक्रम सफलतापूर्वक सिर्जना गरियो')
-                return redirect('mandir:admin_event_list')
-                
-            except Exception as e:
-                form.add_error(None, f"मिति रूपान्तरण त्रुटि: {str(e)}")
-                return render(request, 'mandir/admin/event_form.html', {'form': form})
+        except (ValueError, TypeError) as e:
+            messages.error(request, "कृपया सबै मिति फिल्डहरू भर्नुहोस्")
+            
     else:
         form = EventForm()
     
     return render(request, 'mandir/admin/event_form.html', {'form': form})
 
-@admin_required
+@login_required
 def event_update(request, pk):
     event = get_object_or_404(Event, pk=pk)
     if request.method == 'POST':
         form = EventForm(request.POST, instance=event)
-        image_formset = EventImageFormSet(request.POST, request.FILES, instance=event)
-        if form.is_valid() and image_formset.is_valid():
-            form.save()
-            image_formset.save()
-            messages.success(request, 'कार्यक्रम सफलतापूर्वक अपडेट गरियो।')
-            return redirect('mandir:admin_event_list')
+        if form.is_valid():
+            try:
+                event = form.save(commit=False)
+                
+                # Get date components from the form
+                year = int(request.POST.get('year'))
+                month = int(request.POST.get('month'))
+                day = int(request.POST.get('day'))
+
+                # Get current time in Nepal timezone
+                nepal_tz = pytz.timezone('Asia/Kathmandu')
+                current_time = datetime.now(nepal_tz)
+                
+                # Create datetime object with the provided date and current time
+                event_datetime = datetime(
+                    year=year,
+                    month=month,
+                    day=day,
+                    hour=current_time.hour,
+                    minute=current_time.minute,
+                    second=current_time.second,
+                    tzinfo=nepal_tz
+                )
+                
+                # Convert to UTC for storage
+                utc_dt = event_datetime.astimezone(pytz.UTC)
+                event.event_date = utc_dt
+                event.save()
+                
+                # Handle image deletions
+                delete_images = request.POST.getlist('delete_images')
+                EventImage.objects.filter(id__in=delete_images).delete()
+                
+                # Handle new images
+                images = request.FILES.getlist('images')
+                for image in images:
+                    EventImage.objects.create(event=event, image=image)
+                
+                messages.success(request, 'कार्यक्रम सफलतापूर्वक अपडेट गरियो')
+                return redirect('mandir:admin_event_list')
+                
+            except Exception as e:
+                print(f"Error updating event: {str(e)}")  # For debugging
+                messages.error(request, f"कार्यक्रम अपडेट गर्दा त्रुटि: {str(e)}")
+        else:
+            print(f"Form errors: {form.errors}")  # For debugging
+            messages.error(request, "कृपया फारम सही तरिकाले भर्नुहोस्")
     else:
         form = EventForm(instance=event)
-        image_formset = EventImageFormSet(instance=event)
-    return render(request, 'mandir/admin/event_form.html', {
-        'form': form,
-        'image_formset': image_formset
-    })
+        if event.event_date:
+            # Convert UTC to Nepal time for display
+            nepal_tz = pytz.timezone('Asia/Kathmandu')
+            nepal_dt = event.event_date.astimezone(nepal_tz)
+            
+            # Convert to Nepali date
+            nep_date = nepali_date.from_datetime_date(nepal_dt.date())
+            
+            # Initialize form with Nepali date
+            form.initial.update({
+                'year': nep_date.year,
+                'month': nep_date.month,
+                'day': nep_date.day
+            })
+    
+    return render(request, 'mandir/admin/event_form.html', {'form': form})
 
 @admin_required
 def event_delete(request, pk):
@@ -599,3 +685,68 @@ def mission_vision_delete(request, pk):
     point.delete()
     messages.success(request, 'बुँदा सफलतापूर्वक मेटाइयो')
     return redirect('mandir:admin_mission_vision_list')
+
+def password_reset_request(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        try:
+            user = User.objects.get(email=email)
+            # Generate password reset token
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            # Build password reset URL
+            reset_url = request.build_absolute_uri(
+                reverse('mandir:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+            )
+            
+            # Send email
+            subject = "Password Reset Requested"
+            email_template_name = "mandir/password_reset_email.html"
+            context = {
+                "email": user.email,
+                'reset_url': reset_url,
+                'user': user,
+            }
+            email_message = render_to_string(email_template_name, context)
+            
+            send_mail(
+                subject,
+                email_message,
+                'noreply@yoursite.com',  # Change this to your email
+                [user.email],
+                fail_silently=False
+            )
+            
+            messages.success(request, "पासवर्ड रिसेट लिंक तपाईंको इमेलमा पठाइएको छ।")
+            return redirect('mandir:login')
+            
+        except User.DoesNotExist:
+            messages.error(request, "यो इमेल ठेगाना दर्ता गरिएको छैन।")
+            
+    return render(request, 'mandir/password_reset_form.html')
+
+def password_reset_confirm(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+        
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+            
+            if new_password == confirm_password:
+                user.set_password(new_password)
+                user.save()
+                messages.success(request, "तपाईंको पासवर्ड सफलतापूर्वक परिवर्तन गरियो।")
+                return redirect('mandir:login')
+            else:
+                messages.error(request, "पासवर्डहरू मेल खाएनन्।")
+        
+        return render(request, 'mandir/password_reset_confirm.html')
+    else:
+        messages.error(request, "पासवर्ड रिसेट लिंक अमान्य छ।")
+        return redirect('mandir:login')

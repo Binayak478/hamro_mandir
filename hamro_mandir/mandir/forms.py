@@ -3,11 +3,9 @@ from django.forms import inlineformset_factory
 from .models import Event, EventImage, Notice, Blog, Committee, CommitteeMember, Donor, Contact, About, MissionVision
 
 class EventForm(forms.ModelForm):
-    event_year = forms.IntegerField(min_value=1900, max_value=2100)
-    event_month = forms.IntegerField(min_value=1, max_value=12)
-    event_day = forms.IntegerField(min_value=1, max_value=31)
-    event_hour = forms.IntegerField(min_value=0, max_value=23)
-    event_minute = forms.IntegerField(min_value=0, max_value=59)
+    event_year = forms.IntegerField(required=True)
+    event_month = forms.IntegerField(required=True)
+    event_day = forms.IntegerField(required=True)
 
     class Meta:
         model = Event
@@ -16,16 +14,19 @@ class EventForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['title'].widget.attrs.update({
-            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
-        })
-        self.fields['description'].widget = forms.Textarea(attrs={
             'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500',
-            'rows': 4
+            'required': True
         })
-        for field in ['event_year', 'event_month', 'event_day', 'event_hour', 'event_minute']:
-            self.fields[field].widget.attrs.update({
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
-            })
+        self.fields['description'].widget.attrs.update({
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500',
+            'rows': 4,
+            'required': True
+        })
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # We don't need to validate date fields here as they're handled in the view
+        return cleaned_data
 
 class EventImageForm(forms.ModelForm):
     class Meta:
@@ -180,16 +181,32 @@ class MissionVisionForm(forms.ModelForm):
     class Meta:
         model = MissionVision
         fields = ['type', 'point', 'order']
-
+        
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['type'].widget.attrs.update({
-            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
-        })
-        self.fields['point'].widget = forms.Textarea(attrs={
             'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500',
-            'rows': 3
+            'required': True
+        })
+        self.fields['point'].widget.attrs.update({
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500',
+            'rows': 4,
+            'required': True
         })
         self.fields['order'].widget.attrs.update({
-            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
-        }) 
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500',
+            'type': 'number',
+            'min': '0',
+            'required': True
+        })
+        
+        # Customize field labels
+        self.fields['type'].label = 'प्रकार'
+        self.fields['point'].label = 'बुँदा'
+        self.fields['order'].label = 'क्रम'
+        
+        # Customize type choices
+        self.fields['type'].choices = [
+            ('mission', 'लक्ष्य'),
+            ('vision', 'दृष्टि')
+        ]

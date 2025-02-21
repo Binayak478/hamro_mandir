@@ -40,19 +40,49 @@
                 {% endif %}
             </div>
 
-            <!-- Event Date -->
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">मिति</label>
-                <input type="text" 
-                       id="nepaliDate" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                       placeholder="मिति छान्नुहोस्"
-                       autocomplete="off">
-                <!-- Hidden inputs for actual date submission -->
-                <input type="hidden" name="year" id="year">
-                <input type="hidden" name="month" id="month">
-                <input type="hidden" name="day" id="day">
-                <!-- Current time will be automatically set in the backend -->
+            <!-- Date Components -->
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <!-- Year -->
+                <div>
+                    <label for="event_year" class="block text-sm font-medium text-gray-700 mb-1">वर्ष</label>
+                    <input type="number" 
+                           id="event_year" 
+                           name="event_year" 
+                           value="{{ form.initial.event_year|default:'' }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                           placeholder="2080"
+                           min="2000" 
+                           max="2100"
+                           required>
+                </div>
+
+                <!-- Month -->
+                <div>
+                    <label for="event_month" class="block text-sm font-medium text-gray-700 mb-1">महिना</label>
+                    <input type="number" 
+                           id="event_month" 
+                           name="event_month" 
+                           value="{{ form.initial.event_month|default:'' }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                           placeholder="1-12"
+                           min="1" 
+                           max="12"
+                           required>
+                </div>
+
+                <!-- Day -->
+                <div>
+                    <label for="event_day" class="block text-sm font-medium text-gray-700 mb-1">दिन</label>
+                    <input type="number" 
+                           id="event_day" 
+                           name="event_day" 
+                           value="{{ form.initial.event_day|default:'' }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                           placeholder="1-32"
+                           min="1" 
+                           max="32"
+                           required>
+                </div>
             </div>
 
             <!-- Images -->
@@ -91,7 +121,8 @@
                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
                     रद्द गर्नुहोस्
                 </a>
-                <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                <button type="submit" 
+                        class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
                     {% if form.instance.pk %}अपडेट गर्नुहोस्{% else %}सिर्जना गर्नुहोस्{% endif %}
                 </button>
             </div>
@@ -129,4 +160,5 @@ document.addEventListener('DOMContentLoaded', function() {
     {% endif %}
 });
 </script>
-{% endblock %} 
+{% endblock %}
+

@@ -43,13 +43,11 @@ class Event(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        ordering = ['-event_date']
-        verbose_name = 'Event'
-        verbose_name_plural = 'Events'
-
     def __str__(self):
         return self.title
+
+    class Meta:
+        ordering = ['-event_date']
 
 class EventImage(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='images')

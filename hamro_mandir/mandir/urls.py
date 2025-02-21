@@ -74,4 +74,7 @@ urlpatterns = [
     path('manage/mission-vision/create/', views.mission_vision_create, name='mission_vision_create'),
     path('manage/mission-vision/<int:pk>/update/', views.mission_vision_update, name='mission_vision_update'),
     path('manage/mission-vision/<int:pk>/delete/', views.mission_vision_delete, name='mission_vision_delete'),
+
+    path('password-reset/', views.password_reset_request, name='password_reset_request'),
+    path('password-reset/<uidb64>/<token>/', views.password_reset_confirm, name='password_reset_confirm'),
 ] 
