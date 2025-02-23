@@ -120,26 +120,56 @@ class CommitteeMemberForm(forms.ModelForm):
             })
 
 class DonorForm(forms.ModelForm):
-    donation_year = forms.IntegerField(min_value=1900, max_value=2100)
-    donation_month = forms.IntegerField(min_value=1, max_value=12)
-    donation_day = forms.IntegerField(min_value=1, max_value=31)
-
     class Meta:
         model = Donor
-        fields = ['name', 'amount', 'purpose', 'phone', 'address', 'remarks', 'image']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields:
-            if field == 'remarks':
-                self.fields[field].widget = forms.Textarea(attrs={
-                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500',
-                    'rows': 3
-                })
-            else:
-                self.fields[field].widget.attrs.update({
-                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
-                })
+        fields = ['name', 'address', 'phone', 'amount', 'donation_date', 'purpose', 'remarks', 'image']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+                'placeholder': 'दाताको नाम',
+                'required': True
+            }),
+            'address': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+                'placeholder': 'ठेगाना'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+                'placeholder': 'फोन नम्बर'
+            }),
+            'amount': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+                'placeholder': 'रकम',
+                'required': True
+            }),
+            'donation_date': forms.DateInput(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+                'type': 'date',
+                'required': True
+            }),
+            'purpose': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+                'placeholder': 'दानको उद्देश्य'
+            }),
+            'remarks': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+                'placeholder': 'अन्य विवरण',
+                'rows': 3
+            }),
+            'image': forms.FileInput(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500'
+            })
+        }
+        labels = {
+            'name': 'दाताको नाम *',
+            'address': 'ठेगाना',
+            'phone': 'फोन नम्बर',
+            'amount': 'रकम *',
+            'donation_date': 'दान मिति *',
+            'purpose': 'दानको उद्देश्य',
+            'remarks': 'अन्य विवरण',
+            'image': 'तस्विर'
+        }
 
     def clean_image(self):
         image = self.cleaned_data.get('image')
@@ -256,12 +286,6 @@ class TransactionForm(forms.ModelForm):
             'receipt_no': 'रसिद नं.',
         }
 
-    def clean_amount(self):
-        amount = self.cleaned_data.get('amount')
-        if amount <= 0:
-            raise forms.ValidationError('रकम शून्य वा नेगेटिभ हुन सक्दैन')
-        return amount
-
 class InitialBalanceForm(forms.ModelForm):
     class Meta:
         model = Balance
@@ -281,9 +305,3 @@ class InitialBalanceForm(forms.ModelForm):
             'amount': 'प्रारम्भिक रकम',
             'remarks': 'टिप्पणी',
         }
-
-    def clean_amount(self):
-        amount = self.cleaned_data.get('amount')
-        if amount < 0:
-            raise forms.ValidationError('रकम नेगेटिभ हुन सक्दैन')
-        return amount

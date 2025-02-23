@@ -5,6 +5,7 @@ from . import views
 app_name = 'mandir'
 
 urlpatterns = [
+     # yo public ko lagi view matra hune
     path('', views.home, name='home'),
     path('events/', views.event_list, name='events'),
     path('events/<int:pk>/', views.event_detail, name='event_detail'),
@@ -14,6 +15,9 @@ urlpatterns = [
     path('blog/<int:pk>/', views.blog_detail, name='blog_detail'),
     path('committee/', views.committee_list, name='committee'),
     path('contact/', views.contact, name='contact'),
+    path('donors/', views.donor_list, name='donor_list'),
+    path('transactions/', views.public_transaction_list, name='transaction_list'),
+    path('mission-vision/', views.mission_vision, name='mission_vision'),
 
     # Authentication ko lagi
     path('login/', views.login_view, name='login'),
@@ -52,9 +56,9 @@ urlpatterns = [
          views.committee_member_delete, name='committee_member_delete'),
 
     path('manage/donors/', views.admin_donor_list, name='admin_donor_list'),
-    path('manage/donors/create/', views.donor_create, name='donor_create'),
-    path('manage/donors/<int:pk>/update/', views.donor_update, name='donor_update'),
-    path('manage/donors/<int:pk>/delete/', views.donor_delete, name='donor_delete'),
+    path('manage/donors/create/', views.admin_donor_create, name='admin_donor_create'),
+    path('manage/donors/<int:pk>/update/', views.admin_donor_update, name='admin_donor_update'),
+    path('manage/donors/<int:pk>/delete/', views.admin_donor_delete, name='admin_donor_delete'),
 
     path('manage/contacts/', views.admin_contact_list, name='admin_contact_list'),
     path('manage/contacts/<int:pk>/', views.contact_detail, name='contact_detail'),
@@ -69,19 +73,21 @@ urlpatterns = [
     path('manage/about/<int:pk>/update/', views.about_update, name='about_update'),
     path('manage/about/<int:pk>/delete/', views.about_delete, name='about_delete'),
 
-    path('mission-vision/', views.mission_vision, name='mission_vision'),
+    
     path('manage/mission-vision/', views.admin_mission_vision_list, name='admin_mission_vision_list'),
     path('manage/mission-vision/create/', views.mission_vision_create, name='mission_vision_create'),
     path('manage/mission-vision/<int:pk>/update/', views.mission_vision_update, name='mission_vision_update'),
     path('manage/mission-vision/<int:pk>/delete/', views.mission_vision_delete, name='mission_vision_delete'),
-
+    
+    #password reset ko lagi
     path('password-reset/', views.password_reset_request, name='password_reset_request'),
     path('password-reset/<uidb64>/<token>/', views.password_reset_confirm, name='password_reset_confirm'),
 
-    path('donors/', views.donor_list, name='donor_list'),
+    
     
     #transaction ko lagi
-    path('transactions/', views.admin_transaction_list, name='admin_transaction_list'),
+    
+    path('manage/transactions/', views.admin_transaction_list, name='admin_transaction_list'),
     path('manage/transactions/create/', views.admin_transaction_create, name='admin_transaction_create'),
     path('manage/transactions/<int:pk>/edit/', views.admin_transaction_edit, name='admin_transaction_edit'),
 ] 

@@ -12,116 +12,28 @@
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             
-            <!-- Image Upload -->
-            <div class="mb-6">
-                <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                    तस्विर
-                </label>
-                <div class="flex items-center space-x-4">
-                    {% if form.instance.image %}
-                    <div class="w-24 h-24 rounded-full overflow-hidden">
-                        <img src="{{ form.instance.image.url }}" alt="दाता तस्विर" class="w-full h-full object-cover">
-                    </div>
-                    {% endif %}
-                    <div class="flex-1">
-                        {{ form.image }}
-                        {% if form.image.errors %}
-                        <p class="text-red-600 text-sm mt-1">{{ form.image.errors.0 }}</p>
-                        {% endif %}
-                        <p class="text-sm text-gray-500 mt-1">तस्विर अपलोड गर्नुहोस् (वैकल्पिक)</p>
-                    </div>
-                </div>
+            {% if form.non_field_errors %}
+            <div class="mb-4 p-4 bg-red-50 text-red-600 rounded-lg">
+                {{ form.non_field_errors }}
             </div>
+            {% endif %}
 
-            <!-- Name -->
+            {% for field in form %}
             <div class="mb-4">
-                <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                    नाम
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    {{ field.label }}
                 </label>
-                {{ form.name }}
-                {% if form.name.errors %}
-                <p class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                {{ field }}
+                {% if field.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ field.errors.0 }}</p>
+                {% endif %}
+                {% if field.help_text %}
+                <p class="text-gray-500 text-sm mt-1">{{ field.help_text }}</p>
                 {% endif %}
             </div>
+            {% endfor %}
 
-            <!-- Amount -->
-            <div class="mb-4">
-                <label for="{{ form.amount.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                    रकम
-                </label>
-                {{ form.amount }}
-                {% if form.amount.errors %}
-                <p class="text-red-600 text-sm mt-1">{{ form.amount.errors.0 }}</p>
-                {% endif %}
-            </div>
-
-            <!-- Purpose -->
-            <div class="mb-4">
-                <label for="{{ form.purpose.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                    उद्देश्य
-                </label>
-                {{ form.purpose }}
-                {% if form.purpose.errors %}
-                <p class="text-red-600 text-sm mt-1">{{ form.purpose.errors.0 }}</p>
-                {% endif %}
-            </div>
-
-            <!-- Date -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                    <label for="{{ form.donation_year.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                        वर्ष
-                    </label>
-                    {{ form.donation_year }}
-                </div>
-                <div>
-                    <label for="{{ form.donation_month.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                        महिना
-                    </label>
-                    {{ form.donation_month }}
-                </div>
-                <div>
-                    <label for="{{ form.donation_day.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                        दिन
-                    </label>
-                    {{ form.donation_day }}
-                </div>
-            </div>
-
-            <!-- Phone -->
-            <div class="mb-4">
-                <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                    फोन नम्बर
-                </label>
-                {{ form.phone }}
-                {% if form.phone.errors %}
-                <p class="text-red-600 text-sm mt-1">{{ form.phone.errors.0 }}</p>
-                {% endif %}
-            </div>
-
-            <!-- Address -->
-            <div class="mb-4">
-                <label for="{{ form.address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                    ठेगाना
-                </label>
-                {{ form.address }}
-                {% if form.address.errors %}
-                <p class="text-red-600 text-sm mt-1">{{ form.address.errors.0 }}</p>
-                {% endif %}
-            </div>
-
-            <!-- Remarks -->
-            <div class="mb-6">
-                <label for="{{ form.remarks.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                    टिप्पणी
-                </label>
-                {{ form.remarks }}
-                {% if form.remarks.errors %}
-                <p class="text-red-600 text-sm mt-1">{{ form.remarks.errors.0 }}</p>
-                {% endif %}
-            </div>
-
-            <div class="flex justify-end space-x-4">
+            <div class="flex justify-end space-x-4 mt-6">
                 <a href="{% url 'mandir:admin_donor_list' %}" 
                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
                     रद्द गर्नुहोस्

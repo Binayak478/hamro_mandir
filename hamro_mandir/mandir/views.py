@@ -508,40 +508,40 @@ def blog_delete(request, pk):
 # Donor Admin Views
 @admin_required
 def admin_donor_list(request):
-    donors = Donor.objects.order_by('-donation_date')
+    donors = Donor.objects.all().order_by('-donation_date')
     return render(request, 'mandir/admin/donor_list.html', {'donors': donors})
 
 @admin_required
-def donor_create(request):
+def admin_donor_create(request):
     if request.method == 'POST':
-        form = DonorForm(request.POST)
+        form = DonorForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            messages.success(request, 'दाता विवरण सफलतापूर्वक थपियो।')
+            messages.success(request, 'दाता सफलतापूर्वक थपियो')
             return redirect('mandir:admin_donor_list')
     else:
         form = DonorForm()
     return render(request, 'mandir/admin/donor_form.html', {'form': form})
 
 @admin_required
-def donor_update(request, pk):
+def admin_donor_update(request, pk):
     donor = get_object_or_404(Donor, pk=pk)
     if request.method == 'POST':
-        form = DonorForm(request.POST, instance=donor)
+        form = DonorForm(request.POST, request.FILES, instance=donor)
         if form.is_valid():
             form.save()
-            messages.success(request, 'दाता विवरण सफलतापूर्वक अपडेट गरियो।')
+            messages.success(request, 'दाता सफलतापूर्वक अपडेट गरियो')
             return redirect('mandir:admin_donor_list')
     else:
         form = DonorForm(instance=donor)
     return render(request, 'mandir/admin/donor_form.html', {'form': form})
 
 @admin_required
-def donor_delete(request, pk):
+def admin_donor_delete(request, pk):
     donor = get_object_or_404(Donor, pk=pk)
     if request.method == 'POST':
         donor.delete()
-        messages.success(request, 'दाता विवरण सफलतापूर्वक मेटाइयो।')
+        messages.success(request, 'दाता सफलतापूर्वक मेटाइयो')
         return redirect('mandir:admin_donor_list')
     return render(request, 'mandir/admin/donor_confirm_delete.html', {'donor': donor})
 
@@ -759,9 +759,13 @@ def password_reset_confirm(request, uidb64, token):
         return redirect('mandir:login')
 
 def donor_list(request):
+    # Get all unique years from donation_date
     years = Donor.objects.dates('donation_date', 'year').values_list('year', flat=True)
-    donors = Donor.objects.all().order_by('-donation_year', '-donation_month', '-donation_day')
     
+    # Get the queryset
+    donors = Donor.objects.all().order_by('-donation_date')
+    
+    # Apply search filter
     search_query = request.GET.get('search', '')
     if search_query:
         donors = donors.filter(
@@ -769,10 +773,12 @@ def donor_list(request):
             Q(address__icontains=search_query)
         )
     
+    # Apply year filter
     year_filter = request.GET.get('year', '')
     if year_filter:
-        donors = donors.filter(donation_year=year_filter)
+        donors = donors.filter(donation_date__year=year_filter)
     
+    # Pagination
     paginator = Paginator(donors, 12)
     page = request.GET.get('page')
     donors = paginator.get_page(page)
@@ -840,3 +846,31 @@ def admin_transaction_edit(request, pk):
         form = TransactionForm(instance=transaction)
     
     return render(request, 'mandir/admin/transaction_form.html', {'form': form})
+
+def public_transaction_list(request):
+    # Get latest balance
+    latest_balance = Balance.objects.first()
+    
+    # Get all transactions
+    transactions = Transaction.objects.all().order_by('-date', '-created_at')
+    
+    # Calculate summaries
+    total_income = transactions.filter(transaction_type='income').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expense = transactions.filter(transaction_type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
+    
+    # Apply year filter if provided
+    year_filter = request.GET.get('year', '')
+    if year_filter:
+        transactions = transactions.filter(date__year=year_filter)
+    
+    # Get unique years for filtering
+    years = Transaction.objects.dates('date', 'year')
+    
+    context = {
+        'latest_balance': latest_balance,
+        'transactions': transactions,
+        'total_income': total_income,
+        'total_expense': total_expense,
+        'years': years,
+    }
+    return render(request, 'mandir/transaction_list.html', context)
