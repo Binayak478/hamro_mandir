@@ -62,8 +62,7 @@ urlpatterns = [
 
     path('manage/contacts/', views.admin_contact_list, name='admin_contact_list'),
     path('manage/contacts/<int:pk>/', views.contact_detail, name='contact_detail'),
-    path('manage/contacts/<int:pk>/toggle-read/', 
-         views.contact_toggle_read, name='contact_toggle_read'),
+    path('manage/contacts/<int:pk>/toggle-read/', views.contact_toggle_read, name='contact_toggle_read'),
     path('manage/contacts/<int:pk>/delete/', views.contact_delete, name='contact_delete'),
 
     path('gallery/', views.gallery_view, name='gallery'),

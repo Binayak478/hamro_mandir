@@ -4,54 +4,41 @@
 <div class="space-y-6">
     <!-- Header -->
     <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-bold">सम्पर्क विवरण</h2>
-        <div class="space-x-2">
-            <a href="{% url 'mandir:contact_toggle_read' contact.pk %}" 
-               class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                {% if contact.is_read %}नपढिएको बनाउनुहोस्{% else %}पढिएको बनाउनुहोस्{% endif %}
+        <h2 class="text-2xl font-bold">सन्देश विवरण</h2>
+        <div class="space-x-4">
+            <a href="{% url 'mandir:contact_toggle_read' pk=contact.pk %}" 
+               class="px-4 py-2 {% if contact.is_read %}bg-gray-500{% else %}bg-green-600{% endif %} text-white rounded-lg hover:opacity-90">
+                {% if contact.is_read %}
+                नपढिएको मार्क गर्नुहोस्
+                {% else %}
+                पढिएको मार्क गर्नुहोस्
+                {% endif %}
             </a>
-            <a href="{% url 'mandir:contact_delete' contact.pk %}" 
-               class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                मेटाउनुहोस्
+            <a href="{% url 'mandir:admin_contact_list' %}" 
+               class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                फिर्ता जानुहोस्
             </a>
         </div>
     </div>
 
     <!-- Contact Details -->
     <div class="bg-white rounded-lg shadow-md p-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-4">
             <div>
-                <h3 class="text-sm font-medium text-gray-500">नाम</h3>
-                <p class="mt-1 text-lg">{{ contact.name }}</p>
+                <h3 class="text-lg font-medium">{{ contact.name }}</h3>
+                <p class="text-gray-500">{{ contact.email }}</p>
+                <p class="text-gray-500">{{ contact.phone }}</p>
             </div>
             <div>
-                <h3 class="text-sm font-medium text-gray-500">इमेल</h3>
-                <p class="mt-1 text-lg">{{ contact.email }}</p>
+                <p class="text-gray-600">{{ contact.message }}</p>
+            </div>
+            <div class="text-sm text-gray-500">
+                <p>प्राप्त मिति: {{ contact.created_at|date:"Y-m-d H:i" }}</p>
+                {% if contact.is_read %}
+                <p>पढिएको मिति: {{ contact.read_at|date:"Y-m-d H:i" }}</p>
+                {% endif %}
             </div>
         </div>
-
-        <div class="mt-6">
-            <h3 class="text-sm font-medium text-gray-500">विषय</h3>
-            <p class="mt-1 text-lg">{{ contact.subject }}</p>
-        </div>
-
-        <div class="mt-6">
-            <h3 class="text-sm font-medium text-gray-500">सन्देश</h3>
-            <div class="mt-1 prose max-w-none">
-                {{ contact.message|linebreaks }}
-            </div>
-        </div>
-
-        <div class="mt-6 text-sm text-gray-500">
-            प्राप्त मिति: {{ contact.created_at|date:"Y-m-d H:i" }}
-        </div>
-    </div>
-
-    <div class="flex justify-end">
-        <a href="{% url 'mandir:admin_contact_list' %}" 
-           class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-            फिर्ता जानुहोस्
-        </a>
     </div>
 </div>
 {% endblock %} 

@@ -549,25 +549,35 @@ def admin_donor_delete(request, pk):
 # Contact Admin Views
 @admin_required
 def admin_contact_list(request):
-    contacts = Contact.objects.order_by('-created_at')
+    contacts = Contact.objects.all().order_by('-created_at')
     return render(request, 'mandir/admin/contact_list.html', {'contacts': contacts})
 
-@admin_required
-def contact_detail(request, pk):
-    message = get_object_or_404(Contact, pk=pk)
-    if not message.is_read:
-        message.is_read = True
-        message.save()
-    return render(request, 'mandir/admin/contact_detail.html', {'message': message})
+def is_admin(user):
+    return user.is_staff
 
-@admin_required
+@login_required
+@user_passes_test(is_admin)
+def contact_detail(request, pk):
+    contact = get_object_or_404(Contact, pk=pk)
+    return render(request, 'mandir/admin/contact_detail.html', {'contact': contact})
+
+@login_required
+@user_passes_test(is_admin)
 def contact_toggle_read(request, pk):
-    message = get_object_or_404(Contact, pk=pk)
-    message.is_read = not message.is_read
-    message.save()
+    contact = get_object_or_404(Contact, pk=pk)
+    if contact.is_read:
+        contact.is_read = False
+        contact.read_at = None
+        messages.success(request, 'सन्देश नपढिएको मार्क गरियो')
+    else:
+        contact.is_read = True
+        contact.read_at = timezone.now()
+        messages.success(request, 'सन्देश पढिएको मार्क गरियो')
+    contact.save()
     return redirect('mandir:contact_detail', pk=pk)
 
-@admin_required
+@login_required
+@user_passes_test(is_admin)
 def contact_delete(request, pk):
     message = get_object_or_404(Contact, pk=pk)
     message.delete()
@@ -791,9 +801,6 @@ def donor_list(request):
         'search_query': search_query,
     }
     return render(request, 'mandir/donor_list.html', context)
-
-def is_admin(user):
-    return user.is_staff
 
 @login_required
 @user_passes_test(is_admin)
