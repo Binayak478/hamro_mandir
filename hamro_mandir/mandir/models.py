@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.conf import settings
 
 class Committee(models.Model):
     name = models.CharField(max_length=100)
@@ -97,6 +99,7 @@ class Donor(models.Model):
     phone = models.CharField(max_length=20, blank=True, null=True, verbose_name='फोन नम्बर')
     address = models.CharField(max_length=200, blank=True, null=True, verbose_name='ठेगाना')
     remarks = models.TextField(blank=True, null=True, verbose_name='टिप्पणी')
+    image = models.ImageField(upload_to='donor_images/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -110,8 +113,8 @@ class Donor(models.Model):
 
 class MissionVision(models.Model):
     TYPE_CHOICES = [
-        ('mission', 'Mission'),
-        ('vision', 'Vision')
+        ('mission', 'लक्ष्य'),
+        ('vision', 'दृष्टि')
     ]
     
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
@@ -123,6 +126,7 @@ class MissionVision(models.Model):
 
     class Meta:
         ordering = ['type', 'order']
+        db_table = 'mandir_missionvision'  # explicitly set table name
 
     def __str__(self):
         return f"{self.get_type_display()} Point {self.order}"
@@ -167,3 +171,73 @@ class About(models.Model):
 
     def __str__(self):
         return self.title
+
+class Balance(models.Model):
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    date = models.DateField(auto_now_add=True)
+    remarks = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"Balance: रु.{self.amount} on {self.date}"
+
+class Transaction(models.Model):
+    TRANSACTION_TYPES = (
+        ('income', 'आम्दानी'),
+        ('expense', 'खर्च'),
+    )
+
+    CATEGORIES = (
+        ('donation', 'दान'),
+        ('puja', 'पूजा'),
+        ('maintenance', 'मर्मत'),
+        ('salary', 'तलब'),
+        ('utilities', 'उपयोगिता'),
+        ('other', 'अन्य'),
+    )
+
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    category = models.CharField(max_length=20, choices=CATEGORIES)
+    date = models.DateField()
+    description = models.TextField()
+    receipt_no = models.CharField(max_length=50, blank=True, null=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='transactions'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return f"{self.get_transaction_type_display()}: रु.{self.amount} - {self.description[:30]}"
+
+    def save(self, *args, **kwargs):
+        # Get the latest balance
+        latest_balance = Balance.objects.first()
+        if not latest_balance and self.transaction_type == 'expense':
+            raise ValidationError("Cannot record expense without initial balance")
+
+        current_balance = latest_balance.amount if latest_balance else 0
+        
+        # Calculate new balance
+        if self.transaction_type == 'income':
+            new_balance = current_balance + self.amount
+        else:  # expense
+            if current_balance < self.amount:
+                raise ValidationError("Insufficient balance for this expense")
+            new_balance = current_balance - self.amount
+
+        # Create new balance record
+        Balance.objects.create(
+            amount=new_balance,
+            remarks=f"After {self.get_transaction_type_display()}: {self.description[:50]}"
+        )
+
+        super().save(*args, **kwargs)

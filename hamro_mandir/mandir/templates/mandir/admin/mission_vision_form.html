@@ -4,7 +4,7 @@
 <div class="space-y-6">
     <div class="flex justify-between items-center">
         <h2 class="text-2xl font-bold">
-            {% if form.instance.pk %}बुँदा सम्पादन{% else %}नयाँ बुँदा{% endif %}
+            {% if form.instance.pk %}लक्ष्य/दृष्टि सम्पादन{% else %}नयाँ लक्ष्य/दृष्टि{% endif %}
         </h2>
     </div>
 
@@ -15,7 +15,7 @@
             <!-- Type -->
             <div class="mb-4">
                 <label for="{{ form.type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                    प्रकार
+                    {{ form.type.label }}
                 </label>
                 {{ form.type }}
                 {% if form.type.errors %}
@@ -26,7 +26,7 @@
             <!-- Point -->
             <div class="mb-4">
                 <label for="{{ form.point.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                    बुँदा
+                    {{ form.point.label }}
                 </label>
                 {{ form.point }}
                 {% if form.point.errors %}
@@ -37,7 +37,7 @@
             <!-- Order -->
             <div class="mb-6">
                 <label for="{{ form.order.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                    क्रम
+                    {{ form.order.label }}
                 </label>
                 {{ form.order }}
                 {% if form.order.errors %}
@@ -50,7 +50,8 @@
                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
                     रद्द गर्नुहोस्
                 </a>
-                <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                <button type="submit" 
+                        class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
                     {% if form.instance.pk %}अपडेट गर्नुहोस्{% else %}सिर्जना गर्नुहोस्{% endif %}
                 </button>
             </div>

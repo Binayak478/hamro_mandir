@@ -1,12 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from .models import Event, Notice, CommitteeMember, Committee, Contact, Blog, Donor, EventImage, About, MissionVision
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import Event, Notice, CommitteeMember, Committee, Contact, Blog, Donor, EventImage, About, MissionVision, Transaction, Balance
 from .forms import (
     EventForm, EventImageFormSet, 
     NoticeForm, BlogForm, 
     CommitteeForm, CommitteeMemberForm,
     DonorForm, ContactForm,
-    AboutForm, MissionVisionForm
+    AboutForm, MissionVisionForm,
+    TransactionForm
 )
 from .decorators import admin_required
 from django.contrib import messages
@@ -15,7 +16,6 @@ from datetime import date, datetime
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 import pytz
-from nepali_datetime import date as nepali_date
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -23,6 +23,9 @@ from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.core.paginator import Paginator
+from django.db.models import Q, Sum
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -635,9 +638,9 @@ def about_delete(request, pk):
     messages.success(request, 'हाम्रो बारेमा सफलतापूर्वक मेटाइयो')
     return redirect('mandir:admin_about_list')
 
-def mission_vision_view(request):
-    missions = MissionVision.objects.filter(type='mission')
-    visions = MissionVision.objects.filter(type='vision')
+def mission_vision(request):
+    missions = MissionVision.objects.filter(type='mission').order_by('order')
+    visions = MissionVision.objects.filter(type='vision').order_by('order')
     return render(request, 'mandir/mission_vision.html', {
         'missions': missions,
         'visions': visions
@@ -645,8 +648,8 @@ def mission_vision_view(request):
 
 @login_required
 def admin_mission_vision_list(request):
-    missions = MissionVision.objects.filter(type='mission')
-    visions = MissionVision.objects.filter(type='vision')
+    missions = MissionVision.objects.filter(type='mission').order_by('order')
+    visions = MissionVision.objects.filter(type='vision').order_by('order')
     return render(request, 'mandir/admin/mission_vision_list.html', {
         'missions': missions,
         'visions': visions
@@ -657,33 +660,35 @@ def mission_vision_create(request):
     if request.method == 'POST':
         form = MissionVisionForm(request.POST)
         if form.is_valid():
-            point = form.save(commit=False)
-            point.user = request.user
-            point.save()
-            messages.success(request, 'बुँदा सफलतापूर्वक सिर्जना गरियो')
+            mission_vision = form.save(commit=False)
+            mission_vision.user = request.user
+            mission_vision.save()
+            messages.success(request, 'सफलतापूर्वक सिर्जना गरियो')
             return redirect('mandir:admin_mission_vision_list')
     else:
         form = MissionVisionForm()
+    
     return render(request, 'mandir/admin/mission_vision_form.html', {'form': form})
 
 @login_required
 def mission_vision_update(request, pk):
-    point = get_object_or_404(MissionVision, pk=pk)
+    mission_vision = get_object_or_404(MissionVision, pk=pk)
     if request.method == 'POST':
-        form = MissionVisionForm(request.POST, instance=point)
+        form = MissionVisionForm(request.POST, instance=mission_vision)
         if form.is_valid():
             form.save()
-            messages.success(request, 'बुँदा सफलतापूर्वक अपडेट गरियो')
+            messages.success(request, 'सफलतापूर्वक अपडेट गरियो')
             return redirect('mandir:admin_mission_vision_list')
     else:
-        form = MissionVisionForm(instance=point)
+        form = MissionVisionForm(instance=mission_vision)
+    
     return render(request, 'mandir/admin/mission_vision_form.html', {'form': form})
 
 @login_required
 def mission_vision_delete(request, pk):
-    point = get_object_or_404(MissionVision, pk=pk)
-    point.delete()
-    messages.success(request, 'बुँदा सफलतापूर्वक मेटाइयो')
+    mission_vision = get_object_or_404(MissionVision, pk=pk)
+    mission_vision.delete()
+    messages.success(request, 'सफलतापूर्वक मेटाइयो')
     return redirect('mandir:admin_mission_vision_list')
 
 def password_reset_request(request):
@@ -701,7 +706,7 @@ def password_reset_request(request):
             )
             
             # Send email
-            subject = "Password Reset Requested"
+            subject = "पासवर्ड रिसेट अनुरोध"
             email_template_name = "mandir/password_reset_email.html"
             context = {
                 "email": user.email,
@@ -710,11 +715,13 @@ def password_reset_request(request):
             }
             email_message = render_to_string(email_template_name, context)
             
+            # Send HTML email
             send_mail(
                 subject,
-                email_message,
-                'noreply@yoursite.com',  # Change this to your email
+                '', # Empty string for plain text version
+                'noreply@yoursite.com',
                 [user.email],
+                html_message=email_message,
                 fail_silently=False
             )
             
@@ -750,3 +757,86 @@ def password_reset_confirm(request, uidb64, token):
     else:
         messages.error(request, "पासवर्ड रिसेट लिंक अमान्य छ।")
         return redirect('mandir:login')
+
+def donor_list(request):
+    years = Donor.objects.dates('donation_date', 'year').values_list('year', flat=True)
+    donors = Donor.objects.all().order_by('-donation_year', '-donation_month', '-donation_day')
+    
+    search_query = request.GET.get('search', '')
+    if search_query:
+        donors = donors.filter(
+            Q(name__icontains=search_query) |
+            Q(address__icontains=search_query)
+        )
+    
+    year_filter = request.GET.get('year', '')
+    if year_filter:
+        donors = donors.filter(donation_year=year_filter)
+    
+    paginator = Paginator(donors, 12)
+    page = request.GET.get('page')
+    donors = paginator.get_page(page)
+    
+    context = {
+        'donors': donors,
+        'years': years,
+    }
+    return render(request, 'mandir/donor_list.html', context)
+
+def is_admin(user):
+    return user.is_staff
+
+@login_required
+@user_passes_test(is_admin)
+def admin_transaction_list(request):
+    latest_balance = Balance.objects.first()
+    transactions = Transaction.objects.all().order_by('-date', '-created_at')
+    
+    total_income = transactions.filter(transaction_type='income').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expense = transactions.filter(transaction_type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
+    
+    context = {
+        'latest_balance': latest_balance,
+        'transactions': transactions,
+        'total_income': total_income,
+        'total_expense': total_expense,
+    }
+    return render(request, 'mandir/admin/transaction_list.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def admin_transaction_create(request):
+    if request.method == 'POST':
+        form = TransactionForm(request.POST)
+        if form.is_valid():
+            try:
+                transaction = form.save(commit=False)
+                transaction.created_by = request.user
+                transaction.save()
+                messages.success(request, 'कारोबार सफलतापूर्वक थपियो')
+                return redirect('mandir:admin_transaction_list')
+            except ValidationError as e:
+                messages.error(request, str(e))
+    else:
+        form = TransactionForm()
+    
+    return render(request, 'mandir/admin/transaction_form.html', {'form': form})
+
+@login_required
+@user_passes_test(is_admin)
+def admin_transaction_edit(request, pk):
+    transaction = get_object_or_404(Transaction, pk=pk)
+    
+    if request.method == 'POST':
+        form = TransactionForm(request.POST, instance=transaction)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(request, 'कारोबार सफलतापूर्वक अपडेट गरियो')
+                return redirect('mandir:admin_transaction_list')
+            except ValidationError as e:
+                messages.error(request, str(e))
+    else:
+        form = TransactionForm(instance=transaction)
+    
+    return render(request, 'mandir/admin/transaction_form.html', {'form': form})

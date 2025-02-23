@@ -167,4 +167,4 @@ EMAIL_HOST = 'smtp.gmail.com'  # Use your email provider's SMTP server
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'thedhunganas@gmail.com'  # email
-EMAIL_HOST_PASSWORD = 'your-app-password'  # Your email password or app-specific password
+EMAIL_HOST_PASSWORD = 'nwqh byqy vonn ptvh'  # Your email password or app-specific password

@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Event, EventImage, Notice, Blog, Committee, CommitteeMember, Donor, Contact, About, MissionVision
+from .models import Event, EventImage, Notice, Blog, Committee, CommitteeMember, Donor, Contact, About, MissionVision, Transaction, Balance
 
 class EventForm(forms.ModelForm):
     event_year = forms.IntegerField(required=True)
@@ -126,7 +126,7 @@ class DonorForm(forms.ModelForm):
 
     class Meta:
         model = Donor
-        fields = ['name', 'amount', 'purpose', 'phone', 'address', 'remarks']
+        fields = ['name', 'amount', 'purpose', 'phone', 'address', 'remarks', 'image']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -140,6 +140,13 @@ class DonorForm(forms.ModelForm):
                 self.fields[field].widget.attrs.update({
                     'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
                 })
+
+    def clean_image(self):
+        image = self.cleaned_data.get('image')
+        if image:
+            if image.size > 5 * 1024 * 1024:  # 5MB limit
+                raise forms.ValidationError('तस्विर साइज 5MB भन्दा कम हुनुपर्छ')
+        return image
 
 class ContactForm(forms.ModelForm):
     class Meta:
@@ -210,3 +217,73 @@ class MissionVisionForm(forms.ModelForm):
             ('mission', 'लक्ष्य'),
             ('vision', 'दृष्टि')
         ]
+
+class TransactionForm(forms.ModelForm):
+    class Meta:
+        model = Transaction
+        fields = ['transaction_type', 'amount', 'category', 'date', 'description', 'receipt_no']
+        widgets = {
+            'transaction_type': forms.Select(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+            }),
+            'amount': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+                'placeholder': 'रकम राख्नुहोस्',
+            }),
+            'category': forms.Select(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+            }),
+            'date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+                'rows': 3,
+                'placeholder': 'कारोबारको विवरण लेख्नुहोस्',
+            }),
+            'receipt_no': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+                'placeholder': 'रसिद नम्बर राख्नुहोस्',
+            }),
+        }
+        labels = {
+            'transaction_type': 'कारोबारको प्रकार',
+            'amount': 'रकम',
+            'category': 'वर्गीकरण',
+            'date': 'मिति',
+            'description': 'विवरण',
+            'receipt_no': 'रसिद नं.',
+        }
+
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if amount <= 0:
+            raise forms.ValidationError('रकम शून्य वा नेगेटिभ हुन सक्दैन')
+        return amount
+
+class InitialBalanceForm(forms.ModelForm):
+    class Meta:
+        model = Balance
+        fields = ['amount', 'remarks']
+        widgets = {
+            'amount': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+                'placeholder': 'प्रारम्भिक रकम राख्नुहोस्',
+            }),
+            'remarks': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
+                'rows': 3,
+                'placeholder': 'टिप्पणी लेख्नुहोस्',
+            }),
+        }
+        labels = {
+            'amount': 'प्रारम्भिक रकम',
+            'remarks': 'टिप्पणी',
+        }
+
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if amount < 0:
+            raise forms.ValidationError('रकम नेगेटिभ हुन सक्दैन')
+        return amount

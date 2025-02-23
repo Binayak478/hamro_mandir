@@ -2,32 +2,32 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto space-y-12">
+    <div class="max-w-4xl mx-auto">
         <!-- Mission Section -->
-        <div>
-            <h2 class="text-3xl font-bold text-center mb-6">हाम्रो लक्ष्य</h2>
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <ol class="list-decimal list-inside space-y-4">
-                    {% for mission in missions %}
-                    <li class="text-lg">{{ mission.point }}</li>
-                    {% empty %}
-                    <li class="text-gray-500">कुनै लक्ष्य उपलब्ध छैन</li>
-                    {% endfor %}
-                </ol>
+        <div class="mb-12">
+            <h2 class="text-3xl font-bold text-orange-600 mb-6">हाम्रो लक्ष्य</h2>
+            <div class="space-y-4">
+                {% for mission in missions %}
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <p class="text-gray-700">{{ mission.point }}</p>
+                </div>
+                {% empty %}
+                <p class="text-gray-500">कुनै लक्ष्य उपलब्ध छैन</p>
+                {% endfor %}
             </div>
         </div>
 
         <!-- Vision Section -->
         <div>
-            <h2 class="text-3xl font-bold text-center mb-6">हाम्रो दृष्टिकोण</h2>
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <ol class="list-decimal list-inside space-y-4">
-                    {% for vision in visions %}
-                    <li class="text-lg">{{ vision.point }}</li>
-                    {% empty %}
-                    <li class="text-gray-500">कुनै दृष्टिकोण उपलब्ध छैन</li>
-                    {% endfor %}
-                </ol>
+            <h2 class="text-3xl font-bold text-orange-600 mb-6">हाम्रो दृष्टि</h2>
+            <div class="space-y-4">
+                {% for vision in visions %}
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <p class="text-gray-700">{{ vision.point }}</p>
+                </div>
+                {% empty %}
+                <p class="text-gray-500">कुनै दृष्टि उपलब्ध छैन</p>
+                {% endfor %}
             </div>
         </div>
     </div>

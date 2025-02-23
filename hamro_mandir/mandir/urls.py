@@ -69,7 +69,7 @@ urlpatterns = [
     path('manage/about/<int:pk>/update/', views.about_update, name='about_update'),
     path('manage/about/<int:pk>/delete/', views.about_delete, name='about_delete'),
 
-    path('mission-vision/', views.mission_vision_view, name='mission_vision'),
+    path('mission-vision/', views.mission_vision, name='mission_vision'),
     path('manage/mission-vision/', views.admin_mission_vision_list, name='admin_mission_vision_list'),
     path('manage/mission-vision/create/', views.mission_vision_create, name='mission_vision_create'),
     path('manage/mission-vision/<int:pk>/update/', views.mission_vision_update, name='mission_vision_update'),
@@ -77,4 +77,11 @@ urlpatterns = [
 
     path('password-reset/', views.password_reset_request, name='password_reset_request'),
     path('password-reset/<uidb64>/<token>/', views.password_reset_confirm, name='password_reset_confirm'),
+
+    path('donors/', views.donor_list, name='donor_list'),
+    
+    #transaction ko lagi
+    path('transactions/', views.admin_transaction_list, name='admin_transaction_list'),
+    path('manage/transactions/create/', views.admin_transaction_create, name='admin_transaction_create'),
+    path('manage/transactions/<int:pk>/edit/', views.admin_transaction_edit, name='admin_transaction_edit'),
 ] 

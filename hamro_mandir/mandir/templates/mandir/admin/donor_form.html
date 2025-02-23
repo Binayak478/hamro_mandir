@@ -9,9 +9,30 @@
     </div>
 
     <div class="bg-white rounded-lg shadow-md p-6">
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             
+            <!-- Image Upload -->
+            <div class="mb-6">
+                <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    तस्विर
+                </label>
+                <div class="flex items-center space-x-4">
+                    {% if form.instance.image %}
+                    <div class="w-24 h-24 rounded-full overflow-hidden">
+                        <img src="{{ form.instance.image.url }}" alt="दाता तस्विर" class="w-full h-full object-cover">
+                    </div>
+                    {% endif %}
+                    <div class="flex-1">
+                        {{ form.image }}
+                        {% if form.image.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.image.errors.0 }}</p>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">तस्विर अपलोड गर्नुहोस् (वैकल्पिक)</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Name -->
             <div class="mb-4">
                 <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
@@ -112,4 +133,18 @@
         </form>
     </div>
 </div>
+
+<script>
+    document.getElementById('{{ form.image.id_for_label }}').addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            // Optional: Add file size validation
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                alert('तस्विर साइज 5MB भन्दा कम हुनुपर्छ');
+                this.value = '';
+                return;
+            }
+        }
+    });
+</script>
 {% endblock %} 
