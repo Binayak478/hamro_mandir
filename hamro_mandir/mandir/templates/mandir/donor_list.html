@@ -17,8 +17,8 @@
                 <select name="year" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                     <option value="">सबै वर्ष</option>
                     {% for year in years %}
-                    <option value="{{ year }}" {% if request.GET.year == year|stringformat:"i" %}selected{% endif %}>
-                        {{ year }}
+                    <option value="{{ year.year }}" {% if request.GET.year == year.year|stringformat:"i" %}selected{% endif %}>
+                        {{ year.year }}
                     </option>
                     {% endfor %}
                 </select>
@@ -52,7 +52,7 @@
                 <h3 class="text-xl font-semibold mb-2">{{ donor.name }}</h3>
                 <div class="space-y-2 text-gray-600">
                     <p class="font-medium text-orange-600">रु. {{ donor.amount }}</p>
-                    <p>{{ donor.donation_year }}-{{ donor.donation_month }}-{{ donor.donation_day }}</p>
+                    <p>{{ donor.donation_date|date:"Y-m-d" }}</p>
                     {% if donor.purpose %}
                     <p class="text-sm">उद्देश्य: {{ donor.purpose }}</p>
                     {% endif %}

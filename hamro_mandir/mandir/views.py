@@ -26,6 +26,7 @@ from django.urls import reverse
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum
 from django.core.exceptions import ValidationError
+from django.db.models.functions import ExtractYear
 
 User = get_user_model()
 
@@ -759,11 +760,11 @@ def password_reset_confirm(request, uidb64, token):
         return redirect('mandir:login')
 
 def donor_list(request):
-    # Get all unique years from donation_date
-    years = Donor.objects.dates('donation_date', 'year').values_list('year', flat=True)
-    
     # Get the queryset
     donors = Donor.objects.all().order_by('-donation_date')
+    
+    # Get unique years
+    years = donors.dates('donation_date', 'year').distinct()
     
     # Apply search filter
     search_query = request.GET.get('search', '')
@@ -779,13 +780,15 @@ def donor_list(request):
         donors = donors.filter(donation_date__year=year_filter)
     
     # Pagination
-    paginator = Paginator(donors, 12)
+    paginator = Paginator(donors, 12)  # Show 12 donors per page
     page = request.GET.get('page')
     donors = paginator.get_page(page)
     
     context = {
         'donors': donors,
         'years': years,
+        'current_year': year_filter,
+        'search_query': search_query,
     }
     return render(request, 'mandir/donor_list.html', context)
 
