@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Event, EventImage, Notice, Blog, Committee, CommitteeMember, Donor, Contact
+from .models import Event, EventImage, Notice, Blog, Committee, CommitteeMember, Donor, Contact,BeaDonor
 
 class EventImageInline(admin.TabularInline):
     model = EventImage
@@ -56,3 +56,13 @@ class ContactAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False  # Prevent adding contacts through admin
+    
+
+@admin.register(BeaDonor)
+class BeaDonorAdmin(admin.ModelAdmin):
+    list_display = ['name', 'email', 'phone', 'amount', 'created_at', 'is_read']
+    list_filter = ['is_read', 'created_at']
+    search_fields = ['name', 'email', 'phone']
+
+    def has_add_permission(self, request):
+        return False  # admin le add garna didaina

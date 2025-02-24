@@ -1,13 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Event, Notice, CommitteeMember, Committee, Contact, Blog, Donor, EventImage, About, MissionVision, Transaction, Balance
+from .models import Event, Notice, CommitteeMember, Committee, Contact, Blog, Donor, EventImage, About, MissionVision, Transaction, Balance,BeaDonor
 from .forms import (
     EventForm, EventImageFormSet, 
     NoticeForm, BlogForm, 
     CommitteeForm, CommitteeMemberForm,
     DonorForm, ContactForm,
     AboutForm, MissionVisionForm,
-    TransactionForm
+    TransactionForm,BeaDonorForm
 )
 from .decorators import admin_required
 from django.contrib import messages
@@ -65,12 +65,28 @@ def blog_detail(request, pk):
     return render(request, 'mandir/blog_detail.html', {'blog': blog})
 
 def committee_list(request):
-    current_committee = Committee.objects.filter(is_current=True).first()
-    past_committees = Committee.objects.filter(is_current=False).order_by('-end_date')
+    # Get current committee
+    current_committee = Committee.objects.filter(
+        start_date__lte=timezone.now(),
+        end_date__gte=timezone.now()
+    ).first()
+    
+    # Get committee members for current committee
+    committee_members = CommitteeMember.objects.filter(
+        committee=current_committee
+    ) if current_committee else []
+    
+    # Get past committees
+    past_committees = Committee.objects.filter(
+        end_date__lt=timezone.now()
+    ).order_by('-end_date')
+    
     context = {
         'current_committee': current_committee,
+        'committee_members': committee_members,
         'past_committees': past_committees,
     }
+    
     return render(request, 'mandir/committee.html', context)
 
 def contact(request):
@@ -84,15 +100,19 @@ def contact(request):
         form = ContactForm()
     return render(request, 'mandir/contact.html', {'form': form})
 
+
+
 # admin lai sabai operation garxa
 @admin_required
 def admin_dashboard(request):
+    recent_donors = BeaDonor.objects.order_by('-created_at')[:5]
     context = {
         'total_events': Event.objects.count(),
         'total_notices': Notice.objects.count(),
         'total_messages': Contact.objects.filter(is_read=False).count(),
         'total_donors': Donor.objects.count(),
         'recent_contacts': Contact.objects.order_by('-created_at')[:5],
+        'recent_donors': recent_donors,
     }
     return render(request, 'mandir/admin/dashboard.html', context)
 
@@ -879,3 +899,49 @@ def public_transaction_list(request):
         'years': years,
     }
     return render(request, 'mandir/transaction_list.html', context)
+
+#forpublic
+def bedonor(request):
+    if request.method == 'POST':
+        form = BeaDonorForm(request.POST)
+        if form.is_valid():
+            try:
+                donor = form.save()
+                messages.success(request, 'तपाईंको सन्देश सफलतापूर्वक पठाइएको छ।')
+                return redirect('mandir:bedonor')
+            except Exception as e:
+                print(f"Error saving donor: {e}")  # For debugging
+                messages.error(request, 'केही गडबड भयो। कृपया पुन: प्रयास गर्नुहोस्।')
+        else:
+            messages.error(request, 'कृपया फारम सही तरिकाले भर्नुहोस्।')
+    else:
+        form = BeaDonorForm()
+    return render(request, 'mandir/bedonor.html', {'form': form})
+
+# Bedonor Admin Views
+@admin_required
+def admin_bedonor_list(request):
+    beadonor = BeaDonor.objects.order_by('-created_at')
+    return render(request, 'mandir/admin/bedonor_list.html', {'beadonor': beadonor})
+
+@admin_required
+def bedonor_detail(request, pk):
+    bedonor = get_object_or_404(BeaDonor, pk=pk)
+    if not bedonor.is_read:
+        bedonor.is_read = True
+        bedonor.save()
+    return render(request, 'mandir/admin/bedonor_detail.html', {'bedonor': bedonor})
+
+@admin_required
+def bedonor_toggle_read(request, pk):
+    message = get_object_or_404(BeaDonor, pk=pk)
+    message.is_read = not message.is_read
+    message.save()
+    return redirect('mandir:bedonor_detail', pk=pk)
+
+@admin_required
+def bedonor_delete(request, pk):
+    message = get_object_or_404(BeaDonor, pk=pk)
+    message.delete()
+    messages.success(request, 'सन्देश सफलतापूर्वक मेटाइयो।')
+    return redirect('mandir:admin_bedonor_list')

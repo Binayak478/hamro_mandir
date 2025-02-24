@@ -1,0 +1,49 @@
+{% extends 'mandir/admin/base_admin.html' %}
+
+{% block admin_content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">दाता विवरण</h1>
+            <div class="space-x-2">
+                <a href="{% url 'mandir:bedonor_toggle_read' pk=bedonor.pk %}" 
+                   class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    {% if bedonor.is_read %}पढिएको{% else %}नपढिएको{% endif %}
+                </a>
+                <a href="{% url 'mandir:bedonor_delete' pk=bedonor.pk %}" 
+                   class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                   onclick="return confirm('के तपाईं यो सन्देश मेटाउन चाहनुहुन्छ?');">
+                    मेटाउनुहोस्
+                </a>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <h3 class="font-semibold text-gray-600">नाम</h3>
+                <p>{{ bedonor.name }}</p>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-600">इमेल</h3>
+                <p>{{ bedonor.email }}</p>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-600">फोन</h3>
+                <p>{{ bedonor.phone }}</p>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-600">रकम</h3>
+                <p>रु. {{ bedonor.amount }}</p>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-600">सन्देश</h3>
+                <p class="whitespace-pre-wrap">{{ bedonor.message }}</p>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-600">मिति</h3>
+                <p>{{ bedonor.created_at|date:"Y-m-d H:i" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

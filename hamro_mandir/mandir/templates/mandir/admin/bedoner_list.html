@@ -1,0 +1,31 @@
+{% extends 'mandir/admin/base_admin.html' %}
+
+{% block admin_content %}
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">सन्देशहरू</h2>
+    </div>
+
+    <div class="space-y-4">
+        {% for contact in contacts %}
+            <div class="border-b border-gray-200 pb-4 last:border-b-0">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-bold">{{ contact.subject }}</h3>
+                        <p class="text-gray-600">{{ contact.name }}</p>
+                        <p class="text-sm text-gray-500">{{ contact.created_at|date:"Y-m-d H:i" }}</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <a href="{% url 'mandir:contact_detail' pk=contact.pk %}" 
+                           class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full hover:bg-orange-200">
+                            हेर्नुहोस्
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-gray-500 text-center py-4">कुनै सन्देश छैन</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

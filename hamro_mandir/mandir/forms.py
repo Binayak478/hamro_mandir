@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Event, EventImage, Notice, Blog, Committee, CommitteeMember, Donor, Contact, About, MissionVision, Transaction, Balance
+from .models import Event, EventImage, Notice, Blog, Committee, CommitteeMember, Donor, Contact, About, MissionVision, Transaction, Balance,BeaDonor
 
 class EventForm(forms.ModelForm):
     event_year = forms.IntegerField(required=True)
@@ -211,6 +211,17 @@ class ContactForm(forms.ModelForm):
                     'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
                 })
 
+class BeaDonorForm(forms.ModelForm):
+    class Meta:
+        model = BeaDonor
+        fields = ['name', 'email', 'phone', 'amount', 'message']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'w-full p-2 border rounded'}),
+            'email': forms.EmailInput(attrs={'class': 'w-full p-2 border rounded'}),
+            'phone': forms.TextInput(attrs={'class': 'w-full p-2 border rounded'}),
+            'amount': forms.NumberInput(attrs={'class': 'w-full p-2 border rounded'}),
+            'message': forms.Textarea(attrs={'class': 'w-full p-2 border rounded', 'rows': 4}),
+        }
 class AboutForm(forms.ModelForm):
     class Meta:
         model = About

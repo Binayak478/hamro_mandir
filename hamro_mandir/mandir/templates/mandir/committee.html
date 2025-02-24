@@ -56,9 +56,28 @@
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {% for member in committee.committeemember_set.all %}
-                <div class="bg-gray-50 rounded p-4">
-                    <h4 class="font-bold">{{ member.name }}</h4>
-                    <p class="text-orange-600">{{ member.post }}</p>
+                <div class="bg-gray-50 rounded-lg overflow-hidden shadow-sm">
+                    {% if member.image %}
+                    <img src="{{ member.image.url }}" alt="{{ member.name }}" class="w-full h-48 object-cover">
+                    {% endif %}
+                    <div class="p-4">
+                        <h4 class="font-bold">{{ member.name }}</h4>
+                        <p class="text-orange-600">{{ member.post }}</p>
+                        <div class="text-gray-600 text-sm mt-2">
+                            {% if member.phone_number %}
+                            <p class="mb-1">
+                                <i class="fas fa-phone mr-2"></i>
+                                {{ member.phone_number }}
+                            </p>
+                            {% endif %}
+                            {% if member.address %}
+                            <p>
+                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                {{ member.address }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
@@ -67,4 +86,4 @@
     </div>
     {% endif %}
 </div>
-{% endblock %} 
+{% endblock %}

@@ -63,6 +63,15 @@ urlpatterns = [
     path('manage/contacts/<int:pk>/', views.contact_detail, name='contact_detail'),
     path('manage/contacts/<int:pk>/toggle-read/', views.contact_toggle_read, name='contact_toggle_read'),
     path('manage/contacts/<int:pk>/delete/', views.contact_delete, name='contact_delete'),
+    
+    # Public BeaDonor URLs
+    path('be-donor/', views.bedonor, name='bedonor'),
+    
+    # Admin BeaDonor URLs
+    path('dashboard/bedonors/', views.admin_bedonor_list, name='admin_bedonor_list'),
+    path('dashboard/bedonor/<int:pk>/', views.bedonor_detail, name='bedonor_detail'),
+    path('dashboard/bedonor/<int:pk>/toggle/', views.bedonor_toggle_read, name='bedonor_toggle_read'),
+    path('dashboard/bedonor/<int:pk>/delete/', views.bedonor_delete, name='bedonor_delete'),
 
     path('gallery/', views.gallery_view, name='gallery'),
     path('about/', views.about_view, name='about'),
