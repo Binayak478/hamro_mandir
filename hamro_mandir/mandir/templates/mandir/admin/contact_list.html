@@ -3,49 +3,29 @@
 {% block admin_content %}
 <div class="bg-white rounded-lg shadow-md p-6">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">सन्देश विवरण</h2>
-        <div class="flex items-center space-x-4">
-            <a href="{% url 'mandir:contact_toggle_read' pk=contact.pk %}" 
-               class="px-4 py-2 rounded-lg {% if contact.is_read %}bg-gray-100{% else %}bg-orange-100{% endif %}">
-                {{ contact.is_read|yesno:"पढिएको,नपढिएको" }}
-            </a>
-            <form action="{% url 'mandir:contact_delete' pk=contact.pk %}" method="post" class="inline">
-                {% csrf_token %}
-                <button type="submit" class="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
-                        onclick="return confirm('के तपाईं यो सन्देश मेटाउन चाहनुहुन्छ?');">
-                    मेटाउनुहोस्
-                </button>
-            </form>
-        </div>
+        <h2 class="text-2xl font-bold">सन्देशहरू</h2>
     </div>
 
     <div class="space-y-4">
-        <div>
-            <h3 class="font-bold">विषय:</h3>
-            <p>{{ contact.subject }}</p>
-        </div>
-        <div>
-            <h3 class="font-bold">नाम:</h3>
-            <p>{{ contact.name }}</p>
-        </div>
-        <div>
-            <h3 class="font-bold">इमेल:</h3>
-            <p>{{ contact.email }}</p>
-        </div>
-        <div>
-            <h3 class="font-bold">सन्देश:</h3>
-            <p>{{ contact.message }}</p>
-        </div>
-        <div>
-            <h3 class="font-bold">मिति:</h3>
-            <p>{{ contact.created_at|date:"Y-m-d H:i" }}</p>
-        </div>
-    </div>
-
-    <div class="mt-6">
-        <a href="{% url 'mandir:admin_contact_list' %}" class="text-orange-600 hover:text-orange-700">
-            ← सन्देश सूचीमा फर्कनुहोस्
-        </a>
+        {% for contact in contacts %}
+            <div class="border-b border-gray-200 pb-4 last:border-b-0">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-bold">{{ contact.subject }}</h3>
+                        <p class="text-gray-600">{{ contact.name }}</p>
+                        <p class="text-sm text-gray-500">{{ contact.created_at|date:"Y-m-d H:i" }}</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <a href="{% url 'mandir:contact_detail' pk=contact.pk %}" 
+                           class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full hover:bg-orange-200">
+                            हेर्नुहोस्
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-gray-500 text-center py-4">कुनै सन्देश छैन</p>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}

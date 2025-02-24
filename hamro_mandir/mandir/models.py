@@ -1,7 +1,10 @@
+import os
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.dispatch import receiver
+from django.db.models.signals import post_delete
 
 class Committee(models.Model):
     name = models.CharField(max_length=100)
@@ -37,6 +40,22 @@ class CommitteeMember(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.post}"
+    
+    def delete(self, *args, **kwargs):
+        """Delete the image file from storage when the instance is deleted."""
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)
+        
+        # Automatically delete images when a GalleryImage instance is deleted
+@receiver(models.signals.post_delete, sender=CommitteeMember)
+def auto_delete_image_on_delete(sender, instance, **kwargs):
+    """Deletes the file from filesystem when the model instance is deleted."""
+    if instance.image:
+        image_path = os.path.join(settings.MEDIA_ROOT, str(instance.image))
+        if os.path.exists(image_path):
+            os.remove(image_path)
 
 class Event(models.Model):
     title = models.CharField(max_length=200)
@@ -59,6 +78,22 @@ class EventImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.event.title}"
+    
+    def delete(self, *args, **kwargs):
+        """Delete the image file from storage when the instance is deleted."""
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)
+        
+        # Automatically delete images when a GalleryImage instance is deleted
+@receiver(models.signals.post_delete, sender=EventImage)
+def auto_delete_image_on_delete(sender, instance, **kwargs):
+    """Deletes the file from filesystem when the model instance is deleted."""
+    if instance.image:
+        image_path = os.path.join(settings.MEDIA_ROOT, str(instance.image))
+        if os.path.exists(image_path):
+            os.remove(image_path)
 
 class Notice(models.Model):
     title = models.CharField(max_length=200)
@@ -75,6 +110,22 @@ class Notice(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def delete(self, *args, **kwargs):
+        """Delete the image file from storage when the instance is deleted."""
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)
+        
+        # Automatically delete images when a GalleryImage instance is deleted
+@receiver(models.signals.post_delete, sender=Notice)
+def auto_delete_image_on_delete(sender, instance, **kwargs):
+    """Deletes the file from filesystem when the model instance is deleted."""
+    if instance.image:
+        image_path = os.path.join(settings.MEDIA_ROOT, str(instance.image))
+        if os.path.exists(image_path):
+            os.remove(image_path)
 
 class Blog(models.Model):
     title = models.CharField(max_length=200)
@@ -91,6 +142,24 @@ class Blog(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def delete(self, *args, **kwargs):
+        """Delete the image file from storage when the instance is deleted."""
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)
+        
+        # Automatically delete images when a GalleryImage instance is deleted
+@receiver(models.signals.post_delete, sender=Blog)
+def auto_delete_image_on_delete(sender, instance, **kwargs):
+    """Deletes the file from filesystem when the model instance is deleted."""
+    if instance.image:
+        image_path = os.path.join(settings.MEDIA_ROOT, str(instance.image))
+        if os.path.exists(image_path):
+            os.remove(image_path)
+    
+    
 
 class Donor(models.Model):
     name = models.CharField(max_length=100, verbose_name='नाम')
@@ -111,6 +180,22 @@ class Donor(models.Model):
 
     def __str__(self):
         return f"{self.name} - Rs. {self.amount}"
+    
+    def delete(self, *args, **kwargs):
+        """Delete the image file from storage when the instance is deleted."""
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)
+        
+        # Automatically delete images when a GalleryImage instance is deleted
+@receiver(models.signals.post_delete, sender=Donor)
+def auto_delete_image_on_delete(sender, instance, **kwargs):
+    """Deletes the file from filesystem when the model instance is deleted."""
+    if instance.image:
+        image_path = os.path.join(settings.MEDIA_ROOT, str(instance.image))
+        if os.path.exists(image_path):
+            os.remove(image_path)
 
 class MissionVision(models.Model):
     TYPE_CHOICES = [
