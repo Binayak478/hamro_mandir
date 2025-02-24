@@ -61,7 +61,7 @@
                         <p class="text-gray-600">{{ contact.name }}</p>
                         <p class="text-sm text-gray-500">{{ contact.created_at|date:"Y-m-d H:i" }}</p>
                     </div>
-                    <a href="{% url 'mandir:contact_detail' contact.pk %}" 
+                    <a href="{% url 'mandir:contact_detail' pk=contact.pk %}" 
                        class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm hover:bg-orange-200">
                         हेर्नुहोस्
                     </a>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}हाम्रो मन्दिर{% endblock %}</title>
+    <title>{% block title %}ओमकारेश्वर शिव पान्चायन मन्दिर{% endblock %}</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,7 +20,7 @@
     <nav class="bg-orange-600 text-white">
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center h-16">
-                <a href="{% url 'mandir:home' %}" class="text-xl font-bold">हाम्रो मन्दिर</a>
+                <a href="{% url 'mandir:home' %}" class="text-xl font-bold">ओमकारेश्वर शिव पान्चायन मन्दिर</a>
                 
                 <div class="hidden md:flex space-x-4">
                     <a href="{% url 'mandir:events' %}" class="hover:text-orange-200">कार्यक्रमहरू</a>
@@ -72,9 +72,12 @@
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h3 class="text-lg font-bold mb-4">हाम्रो मन्दिर</h3>
+                    <h3 class="text-lg font-bold mb-4">ओमकारेश्वर शिव पान्चायन मन्दिर</h3>
                     <p class="text-gray-400">
                         हाम्रो मन्दिर एक धार्मिक स्थल हो जहाँ सबै धर्मावलम्बीहरूको लागि स्वागत छ।
+                        ओंकारेश्वर शिव पाञ्चायन मन्दिर नेपालमा अवस्थित एक महत्वपूर्ण धार्मिक स्थल हो।
+                        यो मन्दिर विशेष गरी भगवान शिवको उपासना गर्ने भक्तजनहरूका लागि प्रसिद्ध छ। 
+                        ओंकारेश्वर भन्ने नाम नै भगवान शिवको स्वरूपलाई जनाउँछ, जसले ब्रह्माण्डीय ध्वनि "ॐ" सँग सम्बन्धित छ।
                     </p>
                 </div>
                 <div>
@@ -85,9 +88,9 @@
                         <li><a href="{% url 'mandir:blog' %}" class="text-gray-400 hover:text-white">ब्लग</a></li>
                         <li><a href="{% url 'mandir:gallery' %}" class="text-gray-400 hover:text-white">ग्यालरी</a></li>
                         <li><a href="{% url 'mandir:committee' %}" class="text-gray-400 hover:text-white">कार्य समिति</a></li>
-                        <li><a href="{% url 'mandir:about' %}" class="text-gray-400 hover:text-white">hamro</a></li>
-                        <li><a href="{% url 'mandir:donor_list' %}" class="text-gray-400 hover:text-white">donor</a></li>
-                        <li><a href="{% url 'mandir:transaction_list' %}" class="text-gray-400 hover:text-white">donor</a></li>
+                        <li><a href="{% url 'mandir:about' %}" class="text-gray-400 hover:text-white">हाम्रो बारेमा</a></li>
+                        <li><a href="{% url 'mandir:donor_list' %}" class="text-gray-400 hover:text-white">दाताहरू</a></li>
+                        <li><a href="{% url 'mandir:transaction_list' %}" class="text-gray-400 hover:text-white">कारोवार</a></li>
                     </ul>
                 </div>
                 <div>

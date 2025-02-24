@@ -92,10 +92,12 @@ class CommitteeForm(forms.ModelForm):
     end_year = forms.IntegerField(min_value=1900, max_value=2100, required=False)
     end_month = forms.IntegerField(min_value=1, max_value=12, required=False)
     end_day = forms.IntegerField(min_value=1, max_value=31, required=False)
+    
+    number_of_positions = forms.IntegerField(min_value=0, required=True, label='Number of Positions')
 
     class Meta:
         model = Committee
-        fields = ['name', 'is_current']
+        fields = ['name', 'is_current', 'number_of_positions']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -108,16 +110,29 @@ class CommitteeForm(forms.ModelForm):
             })
 
 class CommitteeMemberForm(forms.ModelForm):
+    position = forms.ChoiceField(choices=[], label='Position')
+
     class Meta:
         model = CommitteeMember
         fields = ['name', 'post', 'position', 'phone_number', 'image']
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, committee=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.committee = committee
+        if committee:
+            self.fields['position'].choices = [(i, i) for i in range(1, committee.number_of_positions + 1)]
         for field in self.fields:
             self.fields[field].widget.attrs.update({
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
             })
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if self.committee:
+            instance.committee = self.committee
+        if commit:
+            instance.save()
+        return instance
 
 class DonorForm(forms.ModelForm):
     class Meta:

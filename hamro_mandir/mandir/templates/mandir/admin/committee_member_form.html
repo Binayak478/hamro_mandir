@@ -35,9 +35,19 @@
             </div>
 
             <!-- Position -->
-            <div class="mb-4">
+            {% comment %} <div class="mb-4">
                 <label for="{{ form.position.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
                     क्रम
+                </label>
+                {{ form.position }}
+                {% if form.position.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.position.errors.0 }}</p>
+                {% endif %}
+            </div> {% endcomment %}
+
+            <div class="mb-4">
+                <label for="{{ form.position.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    क्रम (कुल पद: {{ committee.number_of_positions }})
                 </label>
                 {{ form.position }}
                 {% if form.position.errors %}

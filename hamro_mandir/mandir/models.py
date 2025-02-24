@@ -8,6 +8,7 @@ class Committee(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     is_current = models.BooleanField(default=False)
+    number_of_positions = models.IntegerField(default=0, verbose_name='Number of Positions')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
