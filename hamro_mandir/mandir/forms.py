@@ -51,20 +51,13 @@ EventImageFormSet = inlineformset_factory(
 class NoticeForm(forms.ModelForm):
     class Meta:
         model = Notice
-        fields = ['title', 'description', 'image']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields:
-            if field == 'description':
-                self.fields[field].widget = forms.Textarea(attrs={
-                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500',
-                    'rows': 6
-                })
-            else:
-                self.fields[field].widget.attrs.update({
-                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
-                })
+        fields = ['title', 'description', 'image', 'is_published']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'w-full p-2 border rounded'}),
+            'description': forms.Textarea(attrs={'class': 'w-full p-2 border rounded', 'rows': 4}),
+            'image': forms.FileInput(attrs={'class': 'w-full p-2 border rounded'}),
+            'is_published': forms.CheckboxInput(attrs={'class': 'mr-2'}),
+        }
 
 class BlogForm(forms.ModelForm):
     class Meta:

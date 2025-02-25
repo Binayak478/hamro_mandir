@@ -38,6 +38,7 @@ urlpatterns = [
     path('manage/notices/create/', views.notice_create, name='notice_create'),
     path('manage/notices/<int:pk>/update/', views.notice_update, name='notice_update'),
     path('manage/notices/<int:pk>/delete/', views.notice_delete, name='notice_delete'),
+    path('manage/notices/<int:pk>/toggle-publish/', views.notice_toggle_publish, name='notice_toggle_publish'),
 
     path('manage/blog/', views.admin_blog_list, name='admin_blog_list'),
     path('manage/blog/create/', views.blog_create, name='blog_create'),

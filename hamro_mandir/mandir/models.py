@@ -100,6 +100,7 @@ class Notice(models.Model):
     description = models.TextField()
     image = models.ImageField(upload_to='notice_images/', null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

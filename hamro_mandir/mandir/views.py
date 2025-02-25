@@ -49,7 +49,7 @@ def event_detail(request, pk):
     return render(request, 'mandir/event_detail.html', {'event': event})
 
 def notice_list(request):
-    notices = Notice.objects.order_by('-created_at')
+    notices = Notice.objects.filter(is_published=True).order_by('-created_at')
     return render(request, 'mandir/notices.html', {'notices': notices})
 
 def notice_detail(request, pk):
@@ -307,6 +307,13 @@ def notice_create(request):
     else:
         form = NoticeForm()
     return render(request, 'mandir/admin/notice_form.html', {'form': form})
+
+@admin_required
+def notice_toggle_publish(request, pk):
+    notice = get_object_or_404(Notice, pk=pk)
+    notice.is_published = not notice.is_published
+    notice.save()
+    return redirect('mandir:admin_notice_list')
 
 @admin_required
 def notice_update(request, pk):
