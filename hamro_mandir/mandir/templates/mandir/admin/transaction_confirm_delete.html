@@ -1,0 +1,50 @@
+{% extends 'mandir/admin/base_admin.html' %}
+
+{% block admin_content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-lg mx-auto bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold mb-6 text-center">कारोबार मेटाउने पुष्टि</h2>
+        
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+            <div class="p-4 {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} rounded">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="mb-6">
+            <p class="text-gray-700 mb-4">के तपाईं निश्चित हुनुहुन्छ कि यो कारोबार मेटाउन चाहनुहुन्छ?</p>
+            
+            <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                <p class="font-semibold mb-2">कारोबार विवरण:</p>
+                <p><span class="text-gray-600">मिति:</span> {{ transaction.date }}</p>
+                <p><span class="text-gray-600">विवरण:</span> {{ transaction.description }}</p>
+                <p>
+                    <span class="text-gray-600">रकम:</span>
+                    <span class="{% if transaction.transaction_type == 'income' %}text-green-600{% else %}text-red-600{% endif %}">
+                        {% if transaction.transaction_type == 'expense' %}-{% endif %}
+                        रु. {{ transaction.amount }}
+                    </span>
+                </p>
+            </div>
+            
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'mandir:admin_transaction_list' %}" 
+                   class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+                    रद्द गर्नुहोस्
+                </a>
+                <form method="post" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                        मेटाउनुहोस्
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

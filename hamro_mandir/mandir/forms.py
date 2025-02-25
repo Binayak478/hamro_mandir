@@ -270,40 +270,23 @@ class MissionVisionForm(forms.ModelForm):
 class TransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
-        fields = ['transaction_type', 'amount', 'category', 'date', 'description', 'receipt_no']
-        widgets = {
-            'transaction_type': forms.Select(attrs={
-                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
-            }),
-            'amount': forms.NumberInput(attrs={
-                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
-                'placeholder': 'रकम राख्नुहोस्',
-            }),
-            'category': forms.Select(attrs={
-                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
-            }),
-            'date': forms.DateInput(attrs={
-                'type': 'date',
-                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
-                'rows': 3,
-                'placeholder': 'कारोबारको विवरण लेख्नुहोस्',
-            }),
-            'receipt_no': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
-                'placeholder': 'रसिद नम्बर राख्नुहोस्',
-            }),
-        }
-        labels = {
-            'transaction_type': 'कारोबारको प्रकार',
-            'amount': 'रकम',
-            'category': 'वर्गीकरण',
-            'date': 'मिति',
-            'description': 'विवरण',
-            'receipt_no': 'रसिद नं.',
-        }
+        fields = ['transaction_type', 'amount', 'category', 'description', 'receipt_no']
+        # Exclude date and created_by as we handle them separately
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add custom styling to form fields
+        for field in self.fields.values():
+            field.widget.attrs.update({
+                'class': 'w-full p-2 border rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500'
+            })
+        
+        # Add Nepali labels
+        self.fields['transaction_type'].label = 'कारोबारको प्रकार'
+        self.fields['amount'].label = 'रकम'
+        self.fields['category'].label = 'वर्गीकरण'
+        self.fields['description'].label = 'विवरण'
+        self.fields['receipt_no'].label = 'रसिद नं.'
 
 class InitialBalanceForm(forms.ModelForm):
     class Meta:

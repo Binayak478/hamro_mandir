@@ -26,6 +26,7 @@ from django.urls import reverse
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum
 from django.core.exceptions import ValidationError
+from datetime import date
 
 User = get_user_model()
 
@@ -65,21 +66,35 @@ def blog_detail(request, pk):
     return render(request, 'mandir/blog_detail.html', {'blog': blog})
 
 def committee_list(request):
+    today = timezone.now().date()
+    
+    # Debug information
+    print(f"Current date: {today}")
+    
     # Get current committee
     current_committee = Committee.objects.filter(
-        start_date__lte=timezone.now(),
-        end_date__gte=timezone.now()
+        end_date__gte=today
     ).first()
+    print(f"Current committee: {current_committee}")
     
-    # Get committee members for current committee
-    committee_members = CommitteeMember.objects.filter(
-        committee=current_committee
-    ) if current_committee else []
+    # Get committee members
+    committee_members = []
+    if current_committee:
+        committee_members = CommitteeMember.objects.filter(
+            committee=current_committee
+        ).order_by('position')
+        print(f"Current members count: {committee_members.count()}")
     
-    # Get past committees
-    past_committees = Committee.objects.filter(
-        end_date__lt=timezone.now()
+    # Get past committees - modify the query
+    past_committees = Committee.objects.exclude(
+        id=current_committee.id if current_committee else None
     ).order_by('-end_date')
+    print(f"Past committees count: {past_committees.count()}")
+    
+    # Debug past committees
+    for committee in past_committees:
+        print(f"Past committee: {committee.name} ({committee.start_date} - {committee.end_date})")
+        print(f"Members count: {committee.committeemember_set.count()}")
     
     context = {
         'current_committee': current_committee,
@@ -841,71 +856,130 @@ def admin_transaction_list(request):
     }
     return render(request, 'mandir/admin/transaction_list.html', context)
 
-@login_required
-@user_passes_test(is_admin)
+@admin_required
 def admin_transaction_create(request):
     if request.method == 'POST':
         form = TransactionForm(request.POST)
-        if form.is_valid():
-            try:
+        try:
+            # Get and validate date components
+            year = int(request.POST.get('year'))
+            month = int(request.POST.get('month'))
+            day = int(request.POST.get('day'))
+            transaction_date = date(year, month, day)
+            
+            if form.is_valid():
                 transaction = form.save(commit=False)
-                transaction.created_by = request.user
+                transaction.date = transaction_date
+                transaction.created_by = request.user  # Set the current user
                 transaction.save()
-                messages.success(request, 'कारोबार सफलतापूर्वक थपियो')
+                messages.success(request, 'कारोबार सफलतापूर्वक सिर्जना गरियो।')
                 return redirect('mandir:admin_transaction_list')
-            except ValidationError as e:
-                messages.error(request, str(e))
+        except (ValueError, TypeError):
+            messages.error(request, 'अमान्य मिति।')
     else:
-        form = TransactionForm()
+        form = TransactionForm(initial={'date': date.today()})
     
     return render(request, 'mandir/admin/transaction_form.html', {'form': form})
 
-@login_required
-@user_passes_test(is_admin)
+@admin_required
 def admin_transaction_edit(request, pk):
     transaction = get_object_or_404(Transaction, pk=pk)
-    
     if request.method == 'POST':
         form = TransactionForm(request.POST, instance=transaction)
-        if form.is_valid():
-            try:
-                form.save()
-                messages.success(request, 'कारोबार सफलतापूर्वक अपडेट गरियो')
+        try:
+            # Get and validate date components
+            year = int(request.POST.get('year'))
+            month = int(request.POST.get('month'))
+            day = int(request.POST.get('day'))
+            transaction_date = date(year, month, day)
+            
+            if form.is_valid():
+                transaction = form.save(commit=False)
+                transaction.date = transaction_date
+                transaction.created_by = request.user  # Update the user
+                transaction.save()
+                messages.success(request, 'कारोबार सफलतापूर्वक अपडेट गरियो।')
                 return redirect('mandir:admin_transaction_list')
-            except ValidationError as e:
-                messages.error(request, str(e))
+        except (ValueError, TypeError):
+            messages.error(request, 'अमान्य मिति।')
     else:
         form = TransactionForm(instance=transaction)
     
-    return render(request, 'mandir/admin/transaction_form.html', {'form': form})
+    return render(request, 'mandir/admin/transaction_form.html', {
+        'form': form,
+        'transaction': transaction
+    })
+# @admin_required
+# def admin_transaction_delete(request, pk):
+#     transaction = get_object_or_404(Transaction, pk=pk)
+#     transaction.delete()
+#     messages.success(request, 'कारोबार सफलतापूर्वक मेटाइयो।')
+#     return redirect('mandir:admin_transaction_list')
+
+@admin_required
+def admin_transaction_delete(request, pk):
+    transaction = get_object_or_404(Transaction, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            latest_balance = Balance.objects.latest('created_at')
+            current_balance = latest_balance.amount
+            
+            # Calculate new balance
+            if transaction.transaction_type == 'income':
+                new_balance = current_balance - transaction.amount
+            else:  # expense
+                new_balance = current_balance + transaction.amount
+                
+            # Create new balance record
+            Balance.objects.create(
+                amount=new_balance,
+                remarks=f"Deleted {transaction.get_transaction_type_display()}: {transaction.description[:50]}"
+            )
+            
+            # Delete the transaction
+            transaction.delete()
+            messages.success(request, 'कारोबार सफलतापूर्वक मेटाइयो।')
+            
+        except Balance.DoesNotExist:
+            messages.error(request, 'मौज्दात रेकर्ड फेला परेन।')
+            
+        return redirect('mandir:admin_transaction_list')
+        
+    return render(request, 'mandir/admin/transaction_confirm_delete.html', {
+        'transaction': transaction
+    })
+
+@admin_required
+def transaction_toggle_publish(request, pk):
+    transaction = get_object_or_404(Transaction, pk=pk)
+    transaction.is_published = not transaction.is_published
+    transaction.save()
+    messages.success(request, 'कारोबारको स्थिति परिवर्तन गरियो।')
+    return redirect('mandir:admin_transaction_list')
 
 def public_transaction_list(request):
-    # Get latest balance
-    latest_balance = Balance.objects.first()
+    selected_year = request.GET.get('year')
+    transactions = Transaction.objects.filter(is_published=True)
     
-    # Get all transactions
-    transactions = Transaction.objects.all().order_by('-date', '-created_at')
+    if selected_year:
+        transactions = transactions.filter(date__year=selected_year)
     
-    # Calculate summaries
+    years = Transaction.objects.filter(is_published=True).dates('date', 'year')
     total_income = transactions.filter(transaction_type='income').aggregate(Sum('amount'))['amount__sum'] or 0
     total_expense = transactions.filter(transaction_type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
-    
-    # Apply year filter if provided
-    year_filter = request.GET.get('year', '')
-    if year_filter:
-        transactions = transactions.filter(date__year=year_filter)
-    
-    # Get unique years for filtering
-    years = Transaction.objects.dates('date', 'year')
+    latest_balance = total_income - total_expense
     
     context = {
-        'latest_balance': latest_balance,
-        'transactions': transactions,
+        'transactions': transactions.order_by('-date'),
+        'years': years,
         'total_income': total_income,
         'total_expense': total_expense,
-        'years': years,
+        'latest_balance': {'amount': latest_balance},
     }
     return render(request, 'mandir/transaction_list.html', context)
+
+
 
 #forpublic
 def bedonor(request):

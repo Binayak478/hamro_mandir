@@ -17,9 +17,22 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         {% for member in committee_members %}
         <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-            {% if member.image %}
-            <img src="{{ member.image.url }}" alt="{{ member.name }}" class="w-full h-64 object-cover">
-            {% endif %}
+            <div class="flex justify-center p-4">
+                <div class="w-48 h-48 rounded-full overflow-hidden">
+                    {% if member.image %}
+                    <img src="{{ member.image.url }}" 
+                         alt="{{ member.name }}" 
+                         class="w-full h-full object-cover">
+                    {% else %}
+                    <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                        <svg class="w-20 h-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
             <div class="p-6">
                 <h3 class="text-xl font-bold mb-2">{{ member.name }}</h3>
                 <p class="text-orange-600 mb-3">{{ member.post }}</p>
@@ -57,10 +70,23 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {% for member in committee.committeemember_set.all %}
                 <div class="bg-gray-50 rounded-lg overflow-hidden shadow-sm">
-                    {% if member.image %}
-                    <img src="{{ member.image.url }}" alt="{{ member.name }}" class="w-full h-48 object-cover">
-                    {% endif %}
-                    <div class="p-4">
+                    <div class="flex justify-center p-4">
+                        <div class="w-32 h-32 rounded-full overflow-hidden">
+                            {% if member.image %}
+                            <img src="{{ member.image.url }}" 
+                                 alt="{{ member.name }}" 
+                                 class="w-full h-full object-cover">
+                            {% else %}
+                            <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                                <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="p-4 text-center">
                         <h4 class="font-bold">{{ member.name }}</h4>
                         <p class="text-orange-600">{{ member.post }}</p>
                         <div class="text-gray-600 text-sm mt-2">
@@ -79,11 +105,15 @@
                         </div>
                     </div>
                 </div>
+                {% empty %}
+                <div class="col-span-3 text-center text-gray-500 py-4">
+                    यस समितिका कुनै सदस्यहरू फेला परेनन्।
+                </div>
                 {% endfor %}
             </div>
         </div>
         {% endfor %}
     </div>
-    {% endif %}
+ {% endif %}
 </div>
 {% endblock %}

@@ -279,14 +279,39 @@ class About(models.Model):
 
 class Balance(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    date = models.DateField(auto_now_add=True)
-    remarks = models.TextField(blank=True, null=True)
+    remarks = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-date']
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"Balance: रु.{self.amount} on {self.date}"
+        return f"Balance: रु. {self.amount} ({self.created_at})"
+    
+def save(self, *args, **kwargs):
+    # Get the latest balance
+    latest_balance = Balance.objects.first()
+    if not latest_balance and self.transaction_type == 'expense':
+        raise ValidationError("Cannot record expense without initial balance")
+
+    current_balance = latest_balance.amount if latest_balance else 0
+    
+    # Calculate new balance
+    if self.transaction_type == 'income':
+        new_balance = current_balance + self.amount
+    else:  # expense
+        if current_balance < self.amount:
+            raise ValidationError("Insufficient balance for this expense")
+        new_balance = current_balance - self.amount
+
+    # Create new balance record
+    Balance.objects.create(
+        amount=new_balance,
+        remarks=f"{self.get_transaction_type_display()}: {self.description[:50]}"
+    )
+
+    super().save(*args, **kwargs)
 
 class Transaction(models.Model):
     TRANSACTION_TYPES = (
@@ -314,6 +339,7 @@ class Transaction(models.Model):
         on_delete=models.PROTECT,
         related_name='transactions'
     )
+    is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

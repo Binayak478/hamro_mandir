@@ -98,4 +98,6 @@ urlpatterns = [
     path('manage/transactions/', views.admin_transaction_list, name='admin_transaction_list'),
     path('manage/transactions/create/', views.admin_transaction_create, name='admin_transaction_create'),
     path('manage/transactions/<int:pk>/edit/', views.admin_transaction_edit, name='admin_transaction_edit'),
+    path('manage/transactions/<int:pk>/delete/', views.admin_transaction_delete, name='admin_transaction_delete'),
+    path('manage/transactions/<int:pk>/toggle-publish/', views.transaction_toggle_publish, name='transaction_toggle_publish'),
 ] 

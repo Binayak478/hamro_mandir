@@ -43,6 +43,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">वर्गीकरण</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">रसिद नं.</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">रकम</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">स्थिति</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">कार्य</th>
                     </tr>
                 </thead>
@@ -57,14 +58,29 @@
                             {% if transaction.transaction_type == 'expense' %}-{% endif %}
                             रु. {{ transaction.amount }}
                         </td>
-                        <td class="px-6 py-4 text-right">
+                        <td class="px-6 py-4 text-center">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if transaction.is_published %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                {{ transaction.is_published|yesno:"प्रकाशित,अप्रकाशित" }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right space-x-2">
                             <a href="{% url 'mandir:admin_transaction_edit' transaction.pk %}" 
                                class="text-indigo-600 hover:text-indigo-900">सम्पादन</a>
+                            <a href="{% url 'mandir:transaction_toggle_publish' transaction.pk %}" 
+                               class="{% if transaction.is_published %}text-yellow-600 hover:text-yellow-900{% else %}text-green-600 hover:text-green-900{% endif %}">
+                                {{ transaction.is_published|yesno:"अप्रकाशित गर्नुहोस्,प्रकाशित गर्नुहोस्" }}
+                            </a>
+                            <a href="{% url 'mandir:admin_transaction_delete' transaction.pk %}" 
+                               class="text-red-600 hover:text-red-900"
+                               onclick="return confirm('के तपाईं यो कारोबार मेटाउन चाहनुहुन्छ?');">
+                                मेटाउनुहोस्
+                            </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
                             कुनै कारोबार छैन
                         </td>
                     </tr>
