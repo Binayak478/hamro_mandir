@@ -30,6 +30,25 @@ from datetime import date
 
 User = get_user_model()
 
+#authentication 
+
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            messages.success(request, 'सफलतापूर्वक लगइन गरियो')
+            return redirect('mandir:admin_dashboard')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'mandir/login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, 'सफलतापूर्वक लगआउट गरियो')
+    return redirect('mandir:home')
+
 
 # herne matra
 def home(request):
@@ -115,6 +134,167 @@ def contact(request):
         form = ContactForm()
     return render(request, 'mandir/contact.html', {'form': form})
 
+def mission_vision(request):
+    missions = MissionVision.objects.filter(type='mission').order_by('order')
+    visions = MissionVision.objects.filter(type='vision').order_by('order')
+    return render(request, 'mandir/mission_vision.html', {
+        'missions': missions,
+        'visions': visions
+    })
+
+def gallery_view(request):
+    # Get events that have images, ordered by event date
+    events = Event.objects.filter(images__isnull=False).distinct().order_by('-event_date')
+    return render(request, 'mandir/gallery.html', {'events': events})
+
+def about_view(request):
+    about = About.objects.first()
+    return render(request, 'mandir/about.html', {'about': about})
+
+def password_reset_request(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        try:
+            user = User.objects.get(email=email)
+            # Generate password reset token
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            # Build password reset URL
+            reset_url = request.build_absolute_uri(
+                reverse('mandir:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+            )
+            
+            # Send email
+            subject = "पासवर्ड रिसेट अनुरोध"
+            email_template_name = "mandir/password_reset_email.html"
+            context = {
+                "email": user.email,
+                'reset_url': reset_url,
+                'user': user,
+            }
+            email_message = render_to_string(email_template_name, context)
+            
+            # Send HTML email
+            send_mail(
+                subject,
+                '', # Empty string for plain text version
+                'noreply@yoursite.com',
+                [user.email],
+                html_message=email_message,
+                fail_silently=False
+            )
+            
+            messages.success(request, "पासवर्ड रिसेट लिंक तपाईंको इमेलमा पठाइएको छ।")
+            return redirect('mandir:login')
+            
+        except User.DoesNotExist:
+            messages.error(request, "यो इमेल ठेगाना दर्ता गरिएको छैन।")
+            
+    return render(request, 'mandir/password_reset_form.html')
+
+def password_reset_confirm(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+        
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+            
+            if new_password == confirm_password:
+                user.set_password(new_password)
+                user.save()
+                messages.success(request, "तपाईंको पासवर्ड सफलतापूर्वक परिवर्तन गरियो।")
+                return redirect('mandir:login')
+            else:
+                messages.error(request, "पासवर्डहरू मेल खाएनन्।")
+        
+        return render(request, 'mandir/password_reset_confirm.html')
+    else:
+        messages.error(request, "पासवर्ड रिसेट लिंक अमान्य छ।")
+        return redirect('mandir:login')
+
+def donor_list(request):
+    # Get all unique years from donation_date
+    years = (Donor.objects
+             .dates('donation_date', 'year')
+             .values_list('donation_date__year', flat=True)
+             .order_by('-donation_date__year'))
+    
+    # Get the queryset
+    donors = Donor.objects.all().order_by('-donation_date')
+    
+    # Apply search filter
+    search_query = request.GET.get('search', '')
+    if search_query:
+        donors = donors.filter(
+            Q(name__icontains=search_query) |
+            Q(address__icontains=search_query)
+        )
+    
+    # Apply year filter
+    year_filter = request.GET.get('year', '')
+    if year_filter:
+        donors = donors.filter(donation_date__year=year_filter)
+    
+    # Pagination
+    paginator = Paginator(donors, 12)
+    page = request.GET.get('page')
+    donors = paginator.get_page(page)
+    
+    context = {
+        'donors': donors,
+        'years': years,
+        'current_year': year_filter,
+        'search_query': search_query,
+    }
+    return render(request, 'mandir/donor_list.html', context)
+
+def public_transaction_list(request):
+    selected_year = request.GET.get('year')
+    transactions = Transaction.objects.filter(is_published=True)
+    
+    if selected_year:
+        transactions = transactions.filter(date__year=selected_year)
+    
+    years = Transaction.objects.filter(is_published=True).dates('date', 'year')
+    total_income = transactions.filter(transaction_type='income').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expense = transactions.filter(transaction_type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
+    latest_balance = total_income - total_expense
+    
+    context = {
+        'transactions': transactions.order_by('-date'),
+        'years': years,
+        'total_income': total_income,
+        'total_expense': total_expense,
+        'latest_balance': {'amount': latest_balance},
+    }
+    return render(request, 'mandir/transaction_list.html', context)
+
+
+
+#forpublic
+def bedonor(request):
+    if request.method == 'POST':
+        form = BeaDonorForm(request.POST)
+        if form.is_valid():
+            try:
+                donor = form.save()
+                messages.success(request, 'तपाईंको सन्देश सफलतापूर्वक पठाइएको छ।')
+                return redirect('mandir:bedonor')
+            except Exception as e:
+                print(f"Error saving donor: {e}")  # For debugging
+                messages.error(request, 'केही गडबड भयो। कृपया पुन: प्रयास गर्नुहोस्।')
+        else:
+            messages.error(request, 'कृपया फारम सही तरिकाले भर्नुहोस्।')
+    else:
+        form = BeaDonorForm()
+    return render(request, 'mandir/bedonor.html', {'form': form})
+
 
 
 # admin lai sabai operation garxa
@@ -137,6 +317,8 @@ def admin_event_list(request):
     events = Event.objects.order_by('-event_date')
     return render(request, 'mandir/admin/event_list.html', {'events': events})
 
+
+#event craete garna ko lagi
 @login_required
 def event_create(request):
     if request.method == 'POST':
@@ -304,6 +486,8 @@ def event_image_delete(request, pk, image_pk):
     return redirect('mandir:event_update', pk=pk)
 
 
+#notice ko lagi
+
 @admin_required
 def admin_notice_list(request):
     notices = Notice.objects.order_by('-created_at')
@@ -353,6 +537,7 @@ def notice_delete(request, pk):
     return render(request, 'mandir/admin/notice_confirm_delete.html', {'notice': notice})
 
 
+#committee ko lagi 
 @admin_required
 def admin_committee_list(request):
     committees = Committee.objects.order_by('-start_date')
@@ -480,6 +665,8 @@ def committee_member_create(request, pk):
         'committee': committee
     })
 
+
+#committee member ko lagi
 @admin_required
 def committee_member_update(request, pk):
     member = get_object_or_404(CommitteeMember, pk=pk)
@@ -505,7 +692,7 @@ def committee_member_delete(request, pk):
         return redirect('mandir:admin_committee_list')
     return render(request, 'mandir/admin/committee_member_confirm_delete.html', {'member': member})
 
-# Blog Admin Views
+# Blog ko lagi
 @admin_required
 def admin_blog_list(request):
     blogs = Blog.objects.order_by('-created_at')
@@ -547,7 +734,7 @@ def blog_delete(request, pk):
         return redirect('mandir:admin_blog_list')
     return render(request, 'mandir/admin/blog_confirm_delete.html', {'blog': blog})
 
-# Donor Admin Views
+# Donor add garna admin ko lagi
 @admin_required
 def admin_donor_list(request):
     donors = Donor.objects.all().order_by('-donation_date')
@@ -587,7 +774,7 @@ def admin_donor_delete(request, pk):
         return redirect('mandir:admin_donor_list')
     return render(request, 'mandir/admin/donor_confirm_delete.html', {'donor': donor})
 
-# Contact Admin Views
+# Contact garna ko lagi
 @admin_required
 def admin_contact_list(request):
     contacts = Contact.objects.order_by('-created_at')
@@ -615,31 +802,8 @@ def contact_delete(request, pk):
     messages.success(request, 'सन्देश सफलतापूर्वक मेटाइयो।')
     return redirect('mandir:admin_contact_list')
 
-def login_view(request):
-    if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            messages.success(request, 'सफलतापूर्वक लगइन गरियो')
-            return redirect('mandir:admin_dashboard')
-    else:
-        form = AuthenticationForm()
-    return render(request, 'mandir/login.html', {'form': form})
 
-def logout_view(request):
-    logout(request)
-    messages.success(request, 'सफलतापूर्वक लगआउट गरियो')
-    return redirect('mandir:home')
-
-def gallery_view(request):
-    # Get events that have images, ordered by event date
-    events = Event.objects.filter(images__isnull=False).distinct().order_by('-event_date')
-    return render(request, 'mandir/gallery.html', {'events': events})
-
-def about_view(request):
-    about = About.objects.first()
-    return render(request, 'mandir/about.html', {'about': about})
+#about us ko lagi
 
 @login_required
 def admin_about_list(request):
@@ -680,14 +844,8 @@ def about_delete(request, pk):
     messages.success(request, 'हाम्रो बारेमा सफलतापूर्वक मेटाइयो')
     return redirect('mandir:admin_about_list')
 
-def mission_vision(request):
-    missions = MissionVision.objects.filter(type='mission').order_by('order')
-    visions = MissionVision.objects.filter(type='vision').order_by('order')
-    return render(request, 'mandir/mission_vision.html', {
-        'missions': missions,
-        'visions': visions
-    })
 
+#mission vision add garna
 @login_required
 def admin_mission_vision_list(request):
     missions = MissionVision.objects.filter(type='mission').order_by('order')
@@ -733,111 +891,12 @@ def mission_vision_delete(request, pk):
     messages.success(request, 'सफलतापूर्वक मेटाइयो')
     return redirect('mandir:admin_mission_vision_list')
 
-def password_reset_request(request):
-    if request.method == "POST":
-        email = request.POST.get("email")
-        try:
-            user = User.objects.get(email=email)
-            # Generate password reset token
-            token = default_token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            
-            # Build password reset URL
-            reset_url = request.build_absolute_uri(
-                reverse('mandir:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
-            )
-            
-            # Send email
-            subject = "पासवर्ड रिसेट अनुरोध"
-            email_template_name = "mandir/password_reset_email.html"
-            context = {
-                "email": user.email,
-                'reset_url': reset_url,
-                'user': user,
-            }
-            email_message = render_to_string(email_template_name, context)
-            
-            # Send HTML email
-            send_mail(
-                subject,
-                '', # Empty string for plain text version
-                'noreply@yoursite.com',
-                [user.email],
-                html_message=email_message,
-                fail_silently=False
-            )
-            
-            messages.success(request, "पासवर्ड रिसेट लिंक तपाईंको इमेलमा पठाइएको छ।")
-            return redirect('mandir:login')
-            
-        except User.DoesNotExist:
-            messages.error(request, "यो इमेल ठेगाना दर्ता गरिएको छैन।")
-            
-    return render(request, 'mandir/password_reset_form.html')
 
-def password_reset_confirm(request, uidb64, token):
-    try:
-        uid = urlsafe_base64_decode(uidb64).decode()
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-        
-    if user is not None and default_token_generator.check_token(user, token):
-        if request.method == 'POST':
-            new_password = request.POST.get('new_password')
-            confirm_password = request.POST.get('confirm_password')
-            
-            if new_password == confirm_password:
-                user.set_password(new_password)
-                user.save()
-                messages.success(request, "तपाईंको पासवर्ड सफलतापूर्वक परिवर्तन गरियो।")
-                return redirect('mandir:login')
-            else:
-                messages.error(request, "पासवर्डहरू मेल खाएनन्।")
-        
-        return render(request, 'mandir/password_reset_confirm.html')
-    else:
-        messages.error(request, "पासवर्ड रिसेट लिंक अमान्य छ।")
-        return redirect('mandir:login')
-
-def donor_list(request):
-    # Get all unique years from donation_date
-    years = (Donor.objects
-             .dates('donation_date', 'year')
-             .values_list('donation_date__year', flat=True)
-             .order_by('-donation_date__year'))
-    
-    # Get the queryset
-    donors = Donor.objects.all().order_by('-donation_date')
-    
-    # Apply search filter
-    search_query = request.GET.get('search', '')
-    if search_query:
-        donors = donors.filter(
-            Q(name__icontains=search_query) |
-            Q(address__icontains=search_query)
-        )
-    
-    # Apply year filter
-    year_filter = request.GET.get('year', '')
-    if year_filter:
-        donors = donors.filter(donation_date__year=year_filter)
-    
-    # Pagination
-    paginator = Paginator(donors, 12)
-    page = request.GET.get('page')
-    donors = paginator.get_page(page)
-    
-    context = {
-        'donors': donors,
-        'years': years,
-        'current_year': year_filter,
-        'search_query': search_query,
-    }
-    return render(request, 'mandir/donor_list.html', context)
 
 def is_admin(user):
     return user.is_staff
+
+#tranasction or balance ko lagi
 
 @login_required
 @user_passes_test(is_admin)
@@ -958,48 +1017,9 @@ def transaction_toggle_publish(request, pk):
     messages.success(request, 'कारोबारको स्थिति परिवर्तन गरियो।')
     return redirect('mandir:admin_transaction_list')
 
-def public_transaction_list(request):
-    selected_year = request.GET.get('year')
-    transactions = Transaction.objects.filter(is_published=True)
-    
-    if selected_year:
-        transactions = transactions.filter(date__year=selected_year)
-    
-    years = Transaction.objects.filter(is_published=True).dates('date', 'year')
-    total_income = transactions.filter(transaction_type='income').aggregate(Sum('amount'))['amount__sum'] or 0
-    total_expense = transactions.filter(transaction_type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
-    latest_balance = total_income - total_expense
-    
-    context = {
-        'transactions': transactions.order_by('-date'),
-        'years': years,
-        'total_income': total_income,
-        'total_expense': total_expense,
-        'latest_balance': {'amount': latest_balance},
-    }
-    return render(request, 'mandir/transaction_list.html', context)
 
 
-
-#forpublic
-def bedonor(request):
-    if request.method == 'POST':
-        form = BeaDonorForm(request.POST)
-        if form.is_valid():
-            try:
-                donor = form.save()
-                messages.success(request, 'तपाईंको सन्देश सफलतापूर्वक पठाइएको छ।')
-                return redirect('mandir:bedonor')
-            except Exception as e:
-                print(f"Error saving donor: {e}")  # For debugging
-                messages.error(request, 'केही गडबड भयो। कृपया पुन: प्रयास गर्नुहोस्।')
-        else:
-            messages.error(request, 'कृपया फारम सही तरिकाले भर्नुहोस्।')
-    else:
-        form = BeaDonorForm()
-    return render(request, 'mandir/bedonor.html', {'form': form})
-
-# Bedonor Admin Views
+# Bedonor ko form herna admin site
 @admin_required
 def admin_bedonor_list(request):
     beadonor = BeaDonor.objects.order_by('-created_at')

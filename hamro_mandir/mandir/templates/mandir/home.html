@@ -19,7 +19,7 @@
 <!-- Latest Events Section -->
 <section class="py-12">
     <div class="container mx-auto px-4">
-        <h2 class="text-2xl font-bold mb-6">कार्यक्रमहरू</h2>
+        <h2 class="text-2xl font-bold mb-6 text-center">कार्यक्रमहरू</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             {% for event in latest_events %}
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
@@ -49,7 +49,7 @@
 <!-- Latest Notices Section -->
 <section class="bg-gray-50 py-12">
     <div class="container mx-auto px-4">
-        <h2 class="text-2xl font-bold mb-6">सूचनाहरू</h2>
+        <h2 class="text-2xl font-bold mb-6 text-center">सूचनाहरू</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             {% for notice in latest_notices %}
                 {% if notice.is_published %}
@@ -80,7 +80,7 @@
 {% if current_committee %}
 <section class="py-12">
     <div class="container mx-auto px-4">
-        <h2 class="text-2xl font-bold mb-6">वर्तमान कार्य समिति</h2>
+        <h2 class="text-2xl font-bold mb-6 text-center">वर्तमान कार्य समिति</h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             {% for member in current_committee.committeemember_set.all|dictsortreversed:"position" %}
             <div class="bg-white rounded-lg shadow-md p-4 text-center">
@@ -104,7 +104,7 @@
 <!-- Latest Blogs Section -->
 <section class="bg-gray-50 py-12">
     <div class="container mx-auto px-4">
-        <h2 class="text-2xl font-bold mb-6">ब्लगहरू</h2>
+        <h2 class="text-2xl font-bold mb-6 text-center">ब्लगहरू</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             {% for blog in latest_blogs %}
             <div class="bg-white rounded-lg shadow-md overflow-hidden">

@@ -70,7 +70,7 @@ class BlogForm(forms.ModelForm):
             if field == 'description':
                 self.fields[field].widget = forms.Textarea(attrs={
                     'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500',
-                    'rows': 6
+                    'rows': 10
                 })
             else:
                 self.fields[field].widget.attrs.update({
@@ -213,7 +213,7 @@ class BeaDonorForm(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'w-full p-2 border rounded'}),
             'phone': forms.TextInput(attrs={'class': 'w-full p-2 border rounded'}),
             'amount': forms.NumberInput(attrs={'class': 'w-full p-2 border rounded'}),
-            'message': forms.Textarea(attrs={'class': 'w-full p-2 border rounded', 'rows': 4}),
+            'message': forms.Textarea(attrs={'class': 'w-full p-2 border rounded', 'rows': 5}),
         }
 class AboutForm(forms.ModelForm):
     class Meta:
