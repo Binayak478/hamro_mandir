@@ -372,3 +372,20 @@ class Transaction(models.Model):
         )
 
         super().save(*args, **kwargs)
+
+class SiteSettings(models.Model):
+    logo = models.ImageField(
+        upload_to='site/',
+        null=True,
+        blank=True,
+        help_text="Site logo (preferably square, at least 96x96px)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Site Settings'
+        verbose_name_plural = 'Site Settings'
+
+    def __str__(self):
+        return 'Site Settings'
