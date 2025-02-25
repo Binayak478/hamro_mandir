@@ -334,6 +334,7 @@ class Transaction(models.Model):
     date = models.DateField()
     description = models.TextField()
     receipt_no = models.CharField(max_length=50, blank=True, null=True)
+    image = models.ImageField(upload_to='transaction_image/', null=True, blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

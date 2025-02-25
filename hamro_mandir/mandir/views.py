@@ -918,7 +918,7 @@ def admin_transaction_list(request):
 @admin_required
 def admin_transaction_create(request):
     if request.method == 'POST':
-        form = TransactionForm(request.POST)
+        form = TransactionForm(request.POST,request.FILES)
         try:
             # Get and validate date components
             year = int(request.POST.get('year'))
@@ -944,7 +944,7 @@ def admin_transaction_create(request):
 def admin_transaction_edit(request, pk):
     transaction = get_object_or_404(Transaction, pk=pk)
     if request.method == 'POST':
-        form = TransactionForm(request.POST, instance=transaction)
+        form = TransactionForm(request.POST,request.FILES, instance=transaction)
         try:
             # Get and validate date components
             year = int(request.POST.get('year'))

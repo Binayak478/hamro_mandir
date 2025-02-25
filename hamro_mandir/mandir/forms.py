@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 from .models import Event, EventImage, Notice, Blog, Committee, CommitteeMember, Donor, Contact, About, MissionVision, Transaction, Balance,BeaDonor
+from django.core.validators import FileExtensionValidator
 
 class EventForm(forms.ModelForm):
     event_year = forms.IntegerField(required=True)
@@ -53,11 +54,44 @@ class NoticeForm(forms.ModelForm):
         model = Notice
         fields = ['title', 'description', 'image', 'is_published']
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'w-full p-2 border rounded'}),
-            'description': forms.Textarea(attrs={'class': 'w-full p-2 border rounded', 'rows': 4}),
-            'image': forms.FileInput(attrs={'class': 'w-full p-2 border rounded'}),
-            'is_published': forms.CheckboxInput(attrs={'class': 'mr-2'}),
+            'title': forms.TextInput(attrs={
+                'class': 'w-full p-2 border rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500',
+                'placeholder': 'शीर्षक लेख्नुहोस्'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'w-full p-2 border rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500',
+                'rows': 4,
+                'placeholder': 'विवरण लेख्नुहोस्'
+            }),
+            'image': forms.FileInput(attrs={
+                'class': 'w-full p-2 border rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500',
+                'accept': '.pdf,.jpg,.jpeg,.png'
+            }),
+            'is_published': forms.CheckboxInput(attrs={
+                'class': 'mr-2'
+            }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['image'].validators.append(
+            FileExtensionValidator(
+                allowed_extensions=['pdf', 'jpg', 'jpeg', 'png']
+            )
+        )
+        
+        # Add Nepali labels
+        self.fields['title'].label = 'शीर्षक'
+        self.fields['description'].label = 'विवरण'
+        self.fields['image'].label = 'तस्विर/फाइल'
+        self.fields['is_published'].label = 'प्रकाशित गर्नुहोस्'
+
+    def clean_image(self):
+        image = self.cleaned_data.get('image')
+        if image:
+            if image.size > 5 * 1024 * 1024:  # 5MB limit
+                raise forms.ValidationError('फाइल साइज 5MB भन्दा कम हुनुपर्छ')
+        return image
 
 class BlogForm(forms.ModelForm):
     class Meta:
@@ -270,16 +304,20 @@ class MissionVisionForm(forms.ModelForm):
 class TransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
-        fields = ['transaction_type', 'amount', 'category', 'description', 'receipt_no']
+        fields = ['transaction_type', 'amount', 'category','image', 'description', 'receipt_no']
         # Exclude date and created_by as we handle them separately
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add custom styling to form fields
-        for field in self.fields.values():
-            field.widget.attrs.update({
-                'class': 'w-full p-2 border rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500'
-            })
+        self.fields['image'].validators.append(
+            FileExtensionValidator(
+                allowed_extensions=['pdf', 'jpg', 'jpeg', 'png','webp']
+            )
+        )
+        self.fields['image'].widget.attrs.update({
+            'class': 'w-full p-2 border rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500',
+            'accept': '.pdf,.jpg,.jpeg,.png,.webp'
+        })
         
         # Add Nepali labels
         self.fields['transaction_type'].label = 'कारोबारको प्रकार'
@@ -287,6 +325,7 @@ class TransactionForm(forms.ModelForm):
         self.fields['category'].label = 'वर्गीकरण'
         self.fields['description'].label = 'विवरण'
         self.fields['receipt_no'].label = 'रसिद नं.'
+        
 
 class InitialBalanceForm(forms.ModelForm):
     class Meta:
