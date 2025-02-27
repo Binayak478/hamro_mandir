@@ -38,6 +38,7 @@ urlpatterns = [
     path('manage/notices/create/', views.notice_create, name='notice_create'),
     path('manage/notices/<int:pk>/update/', views.notice_update, name='notice_update'),
     path('manage/notices/<int:pk>/delete/', views.notice_delete, name='notice_delete'),
+    path('manage/notices/<int:pk>/toggle-publish/', views.notice_toggle_publish, name='notice_toggle_publish'),
 
     path('manage/blog/', views.admin_blog_list, name='admin_blog_list'),
     path('manage/blog/create/', views.blog_create, name='blog_create'),
@@ -48,8 +49,7 @@ urlpatterns = [
     path('manage/committee/create/', views.committee_create, name='committee_create'),
     path('manage/committee/<int:pk>/update/', views.committee_update, name='committee_update'),
     path('manage/committee/<int:pk>/delete/', views.committee_delete, name='committee_delete'),
-    path('manage/committee/<int:committee_pk>/members/create/', 
-         views.committee_member_create, name='committee_member_create'),
+    path('committee/<int:pk>/members/create/', views.committee_member_create, name='committee_member_create'),
     path('manage/committee/members/<int:pk>/update/', 
          views.committee_member_update, name='committee_member_update'),
     path('manage/committee/members/<int:pk>/delete/', 
@@ -64,6 +64,15 @@ urlpatterns = [
     path('manage/contacts/<int:pk>/', views.contact_detail, name='contact_detail'),
     path('manage/contacts/<int:pk>/toggle-read/', views.contact_toggle_read, name='contact_toggle_read'),
     path('manage/contacts/<int:pk>/delete/', views.contact_delete, name='contact_delete'),
+    
+    # Public BeaDonor URLs
+    path('be-donor/', views.bedonor, name='bedonor'),
+    
+    # Admin BeaDonor URLs
+    path('dashboard/bedonors/', views.admin_bedonor_list, name='admin_bedonor_list'),
+    path('dashboard/bedonor/<int:pk>/', views.bedonor_detail, name='bedonor_detail'),
+    path('dashboard/bedonor/<int:pk>/toggle/', views.bedonor_toggle_read, name='bedonor_toggle_read'),
+    path('dashboard/bedonor/<int:pk>/delete/', views.bedonor_delete, name='bedonor_delete'),
 
     path('gallery/', views.gallery_view, name='gallery'),
     path('about/', views.about_view, name='about'),
@@ -89,4 +98,6 @@ urlpatterns = [
     path('manage/transactions/', views.admin_transaction_list, name='admin_transaction_list'),
     path('manage/transactions/create/', views.admin_transaction_create, name='admin_transaction_create'),
     path('manage/transactions/<int:pk>/edit/', views.admin_transaction_edit, name='admin_transaction_edit'),
+    path('manage/transactions/<int:pk>/delete/', views.admin_transaction_delete, name='admin_transaction_delete'),
+    path('manage/transactions/<int:pk>/toggle-publish/', views.transaction_toggle_publish, name='transaction_toggle_publish'),
 ] 

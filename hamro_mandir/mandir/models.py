@@ -1,13 +1,17 @@
+import os
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.dispatch import receiver
+from django.db.models.signals import post_delete
 
 class Committee(models.Model):
     name = models.CharField(max_length=100)
     start_date = models.DateField()
     end_date = models.DateField()
     is_current = models.BooleanField(default=False)
+    number_of_positions = models.IntegerField(default=0, verbose_name='Number of Positions')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -36,6 +40,22 @@ class CommitteeMember(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.post}"
+    
+    def delete(self, *args, **kwargs):
+        """Delete the image file from storage when the instance is deleted."""
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)
+        
+        # Automatically delete images when a GalleryImage instance is deleted
+@receiver(models.signals.post_delete, sender=CommitteeMember)
+def auto_delete_image_on_delete(sender, instance, **kwargs):
+    """Deletes the file from filesystem when the model instance is deleted."""
+    if instance.image:
+        image_path = os.path.join(settings.MEDIA_ROOT, str(instance.image))
+        if os.path.exists(image_path):
+            os.remove(image_path)
 
 class Event(models.Model):
     title = models.CharField(max_length=200)
@@ -58,12 +78,29 @@ class EventImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.event.title}"
+    
+    def delete(self, *args, **kwargs):
+        """Delete the image file from storage when the instance is deleted."""
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)
+        
+        # Automatically delete images when a GalleryImage instance is deleted
+@receiver(models.signals.post_delete, sender=EventImage)
+def auto_delete_image_on_delete(sender, instance, **kwargs):
+    """Deletes the file from filesystem when the model instance is deleted."""
+    if instance.image:
+        image_path = os.path.join(settings.MEDIA_ROOT, str(instance.image))
+        if os.path.exists(image_path):
+            os.remove(image_path)
 
 class Notice(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     image = models.ImageField(upload_to='notice_images/', null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -74,6 +111,22 @@ class Notice(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def delete(self, *args, **kwargs):
+        """Delete the image file from storage when the instance is deleted."""
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)
+        
+        # Automatically delete images when a GalleryImage instance is deleted
+@receiver(models.signals.post_delete, sender=Notice)
+def auto_delete_image_on_delete(sender, instance, **kwargs):
+    """Deletes the file from filesystem when the model instance is deleted."""
+    if instance.image:
+        image_path = os.path.join(settings.MEDIA_ROOT, str(instance.image))
+        if os.path.exists(image_path):
+            os.remove(image_path)
 
 class Blog(models.Model):
     title = models.CharField(max_length=200)
@@ -90,6 +143,42 @@ class Blog(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def delete(self, *args, **kwargs):
+        """Delete the image file from storage when the instance is deleted."""
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)
+        
+        # Automatically delete images when a GalleryImage instance is deleted
+@receiver(models.signals.post_delete, sender=Blog)
+def auto_delete_image_on_delete(sender, instance, **kwargs):
+    """Deletes the file from filesystem when the model instance is deleted."""
+    if instance.image:
+        image_path = os.path.join(settings.MEDIA_ROOT, str(instance.image))
+        if os.path.exists(image_path):
+            os.remove(image_path)
+    
+
+class BeaDonor(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=15)
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='रकम')
+    image = models.ImageField(upload_to='be_a_donor_images/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'BeaDonor'
+        verbose_name_plural = 'BeaDonors'
+
+    def __str__(self):
+        return f"{self.name} - {self.subject}"   
 
 class Donor(models.Model):
     name = models.CharField(max_length=100, verbose_name='नाम')
@@ -110,6 +199,22 @@ class Donor(models.Model):
 
     def __str__(self):
         return f"{self.name} - Rs. {self.amount}"
+    
+    def delete(self, *args, **kwargs):
+        """Delete the image file from storage when the instance is deleted."""
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)
+        
+        # Automatically delete images when a GalleryImage instance is deleted
+@receiver(models.signals.post_delete, sender=Donor)
+def auto_delete_image_on_delete(sender, instance, **kwargs):
+    """Deletes the file from filesystem when the model instance is deleted."""
+    if instance.image:
+        image_path = os.path.join(settings.MEDIA_ROOT, str(instance.image))
+        if os.path.exists(image_path):
+            os.remove(image_path)
 
 class MissionVision(models.Model):
     TYPE_CHOICES = [
@@ -174,14 +279,39 @@ class About(models.Model):
 
 class Balance(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    date = models.DateField(auto_now_add=True)
-    remarks = models.TextField(blank=True, null=True)
+    remarks = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-date']
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"Balance: रु.{self.amount} on {self.date}"
+        return f"Balance: रु. {self.amount} ({self.created_at})"
+    
+def save(self, *args, **kwargs):
+    # Get the latest balance
+    latest_balance = Balance.objects.first()
+    if not latest_balance and self.transaction_type == 'expense':
+        raise ValidationError("Cannot record expense without initial balance")
+
+    current_balance = latest_balance.amount if latest_balance else 0
+    
+    # Calculate new balance
+    if self.transaction_type == 'income':
+        new_balance = current_balance + self.amount
+    else:  # expense
+        if current_balance < self.amount:
+            raise ValidationError("Insufficient balance for this expense")
+        new_balance = current_balance - self.amount
+
+    # Create new balance record
+    Balance.objects.create(
+        amount=new_balance,
+        remarks=f"{self.get_transaction_type_display()}: {self.description[:50]}"
+    )
+
+    super().save(*args, **kwargs)
 
 class Transaction(models.Model):
     TRANSACTION_TYPES = (
@@ -204,11 +334,13 @@ class Transaction(models.Model):
     date = models.DateField()
     description = models.TextField()
     receipt_no = models.CharField(max_length=50, blank=True, null=True)
+    image = models.ImageField(upload_to='transaction_image/', null=True, blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name='transactions'
     )
+    is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -241,3 +373,20 @@ class Transaction(models.Model):
         )
 
         super().save(*args, **kwargs)
+
+class SiteSettings(models.Model):
+    logo = models.ImageField(
+        upload_to='site/',
+        null=True,
+        blank=True,
+        help_text="Site logo (preferably square, at least 96x96px)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Site Settings'
+        verbose_name_plural = 'Site Settings'
+
+    def __str__(self):
+        return 'Site Settings'

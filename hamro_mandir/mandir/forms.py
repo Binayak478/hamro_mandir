@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Event, EventImage, Notice, Blog, Committee, CommitteeMember, Donor, Contact, About, MissionVision, Transaction, Balance
+from .models import Event, EventImage, Notice, Blog, Committee, CommitteeMember, Donor, Contact, About, MissionVision, Transaction, Balance,BeaDonor
+from django.core.validators import FileExtensionValidator
 
 class EventForm(forms.ModelForm):
     event_year = forms.IntegerField(required=True)
@@ -51,20 +52,46 @@ EventImageFormSet = inlineformset_factory(
 class NoticeForm(forms.ModelForm):
     class Meta:
         model = Notice
-        fields = ['title', 'description', 'image']
+        fields = ['title', 'description', 'image', 'is_published']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'w-full p-2 border rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500',
+                'placeholder': 'शीर्षक लेख्नुहोस्'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'w-full p-2 border rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500',
+                'rows': 4,
+                'placeholder': 'विवरण लेख्नुहोस्'
+            }),
+            'image': forms.FileInput(attrs={
+                'class': 'w-full p-2 border rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500',
+                'accept': '.pdf,.jpg,.jpeg,.png'
+            }),
+            'is_published': forms.CheckboxInput(attrs={
+                'class': 'mr-2'
+            }),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in self.fields:
-            if field == 'description':
-                self.fields[field].widget = forms.Textarea(attrs={
-                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500',
-                    'rows': 6
-                })
-            else:
-                self.fields[field].widget.attrs.update({
-                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
-                })
+        self.fields['image'].validators.append(
+            FileExtensionValidator(
+                allowed_extensions=['pdf', 'jpg', 'jpeg', 'png']
+            )
+        )
+        
+        # Add Nepali labels
+        self.fields['title'].label = 'शीर्षक'
+        self.fields['description'].label = 'विवरण'
+        self.fields['image'].label = 'तस्विर/फाइल'
+        self.fields['is_published'].label = 'प्रकाशित गर्नुहोस्'
+
+    def clean_image(self):
+        image = self.cleaned_data.get('image')
+        if image:
+            if image.size > 5 * 1024 * 1024:  # 5MB limit
+                raise forms.ValidationError('फाइल साइज 5MB भन्दा कम हुनुपर्छ')
+        return image
 
 class BlogForm(forms.ModelForm):
     class Meta:
@@ -77,7 +104,7 @@ class BlogForm(forms.ModelForm):
             if field == 'description':
                 self.fields[field].widget = forms.Textarea(attrs={
                     'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500',
-                    'rows': 6
+                    'rows': 10
                 })
             else:
                 self.fields[field].widget.attrs.update({
@@ -92,10 +119,12 @@ class CommitteeForm(forms.ModelForm):
     end_year = forms.IntegerField(min_value=1900, max_value=2100, required=False)
     end_month = forms.IntegerField(min_value=1, max_value=12, required=False)
     end_day = forms.IntegerField(min_value=1, max_value=31, required=False)
+    
+    number_of_positions = forms.IntegerField(min_value=0, required=True, label='Number of Positions')
 
     class Meta:
         model = Committee
-        fields = ['name', 'is_current']
+        fields = ['name', 'is_current', 'number_of_positions']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -108,16 +137,29 @@ class CommitteeForm(forms.ModelForm):
             })
 
 class CommitteeMemberForm(forms.ModelForm):
+    position = forms.ChoiceField(choices=[], label='Position')
+
     class Meta:
         model = CommitteeMember
         fields = ['name', 'post', 'position', 'phone_number', 'image']
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, committee=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.committee = committee
+        if committee:
+            self.fields['position'].choices = [(i, i) for i in range(1, committee.number_of_positions + 1)]
         for field in self.fields:
             self.fields[field].widget.attrs.update({
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
             })
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if self.committee:
+            instance.committee = self.committee
+        if commit:
+            instance.save()
+        return instance
 
 class DonorForm(forms.ModelForm):
     class Meta:
@@ -196,6 +238,17 @@ class ContactForm(forms.ModelForm):
                     'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500'
                 })
 
+class BeaDonorForm(forms.ModelForm):
+    class Meta:
+        model = BeaDonor
+        fields = ['name', 'email', 'phone', 'amount', 'message']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'w-full p-2 border rounded'}),
+            'email': forms.EmailInput(attrs={'class': 'w-full p-2 border rounded'}),
+            'phone': forms.TextInput(attrs={'class': 'w-full p-2 border rounded'}),
+            'amount': forms.NumberInput(attrs={'class': 'w-full p-2 border rounded'}),
+            'message': forms.Textarea(attrs={'class': 'w-full p-2 border rounded', 'rows': 5}),
+        }
 class AboutForm(forms.ModelForm):
     class Meta:
         model = About
@@ -251,40 +304,28 @@ class MissionVisionForm(forms.ModelForm):
 class TransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
-        fields = ['transaction_type', 'amount', 'category', 'date', 'description', 'receipt_no']
-        widgets = {
-            'transaction_type': forms.Select(attrs={
-                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
-            }),
-            'amount': forms.NumberInput(attrs={
-                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
-                'placeholder': 'रकम राख्नुहोस्',
-            }),
-            'category': forms.Select(attrs={
-                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
-            }),
-            'date': forms.DateInput(attrs={
-                'type': 'date',
-                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
-                'rows': 3,
-                'placeholder': 'कारोबारको विवरण लेख्नुहोस्',
-            }),
-            'receipt_no': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500',
-                'placeholder': 'रसिद नम्बर राख्नुहोस्',
-            }),
-        }
-        labels = {
-            'transaction_type': 'कारोबारको प्रकार',
-            'amount': 'रकम',
-            'category': 'वर्गीकरण',
-            'date': 'मिति',
-            'description': 'विवरण',
-            'receipt_no': 'रसिद नं.',
-        }
+        fields = ['transaction_type', 'amount', 'category','image', 'description', 'receipt_no']
+        # Exclude date and created_by as we handle them separately
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['image'].validators.append(
+            FileExtensionValidator(
+                allowed_extensions=['pdf', 'jpg', 'jpeg', 'png','webp']
+            )
+        )
+        self.fields['image'].widget.attrs.update({
+            'class': 'w-full p-2 border rounded focus:ring-2 focus:ring-orange-500 focus:border-orange-500',
+            'accept': '.pdf,.jpg,.jpeg,.png,.webp'
+        })
+        
+        # Add Nepali labels
+        self.fields['transaction_type'].label = 'कारोबारको प्रकार'
+        self.fields['amount'].label = 'रकम'
+        self.fields['category'].label = 'वर्गीकरण'
+        self.fields['description'].label = 'विवरण'
+        self.fields['receipt_no'].label = 'रसिद नं.'
+        
 
 class InitialBalanceForm(forms.ModelForm):
     class Meta:

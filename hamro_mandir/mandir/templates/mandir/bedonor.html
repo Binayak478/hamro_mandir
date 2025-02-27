@@ -1,0 +1,86 @@
+{% extends 'mandir/base.html' %}
+{% load static %}
+
+{% block title %}दान गर्नुहोस्{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8 text-center">दान गर्नुहोस्</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Contact Form -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <form method="post">
+                {% csrf_token %}
+                
+                {% if messages %}
+                {% for message in messages %}
+                <div class="mb-4 p-4 {% if message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %} rounded">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">नाम *</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">इमेल *</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">फोन नम्बर *</label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.phone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">रकम</label>
+                    {{ form.amount }}
+                    {% if form.amount.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.amount.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">सन्देश *</label>
+                    {{ form.message }}
+                    {% if form.message.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.message.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="w-full bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700">
+                    पठाउनुहोस्
+                </button>
+            </form>
+        </div>
+
+        <!-- Donation Information -->
+        <div class="relative bg-white rounded-lg shadow-md p-6 min-h-[500px] overflow-hidden">
+            <!-- Background Image -->
+            <div class="absolute inset-0 bg-cover bg-center z-0" 
+                 style="background-image: url('{% static '/image/donation.webp' %}')">
+                <div class="absolute inset-0 bg-black bg-opacity-60"></div>
+            </div>
+            
+            <!-- Content -->
+            <div class="relative z-10 h-full flex flex-col items-center justify-center">
+                <h2 class="text-3xl font-bold mb-4 text-white">तपाईंको दान महत्वपूर्ण छ</h2>
+                <p class="text-lg text-white/90">हाम्रो मन्दिरको विकास र संरक्षणमा सहयोग गर्नुहोस्</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Event, EventImage, Notice, Blog, Committee, CommitteeMember, Donor, Contact
+from .models import Event, EventImage, Notice, Blog, Committee, CommitteeMember,SiteSettings ,Donor, Contact,BeaDonor    
 
 class EventImageInline(admin.TabularInline):
     model = EventImage
@@ -17,6 +17,7 @@ class NoticeAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_at')
     search_fields = ('title', 'description')
     list_filter = ('created_at',)
+    
 
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
@@ -56,3 +57,26 @@ class ContactAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False  # Prevent adding contacts through admin
+    
+
+@admin.register(BeaDonor)
+class BeaDonorAdmin(admin.ModelAdmin):
+    list_display = ['name', 'email', 'phone', 'amount', 'created_at', 'is_read']
+    list_filter = ['is_read', 'created_at']
+    search_fields = ['name', 'email', 'phone']
+
+    def has_add_permission(self, request):
+        return False  # admin le add garna didaina
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'updated_at']
+    readonly_fields = ['created_at', 'updated_at']
+
+    def has_add_permission(self, request):
+        # Allow only one instance
+        return not SiteSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        # Prevent deletion of the only instance
+        return False

@@ -1,4 +1,5 @@
 {% extends 'mandir/base.html' %}
+{% load custom_filters %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
@@ -47,26 +48,59 @@
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
+
+    <!-- Transactions Table -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">मिति</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">विवरण</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">वर्गीकरण</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">रसिद नं.</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">रकम</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">तस्विर/फाइल</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 {% for transaction in transactions %}
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">{{ transaction.date }}</td>
-                    <td class="px-6 py-4">{{ transaction.description }}</td>
-                    <td class="px-6 py-4">{{ transaction.get_category_display }}</td>
-                    <td class="px-6 py-4">{{ transaction.receipt_no|default:"-" }}</td>
-                    <td class="px-6 py-4 text-right {% if transaction.transaction_type == 'income' %}text-green-600{% else %}text-red-600{% endif %}">
-                        {% if transaction.transaction_type == 'expense' %}-{% endif %}
-                        रु. {{ transaction.amount }}
-                    </td>
-                </tr>
+                    {% if transaction.is_published %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ transaction.date }}</td>
+                        <td class="px-6 py-4">{{ transaction.description }}</td>
+                        <td class="px-6 py-4">{{ transaction.get_category_display }}</td>
+                        <td class="px-6 py-4">{{ transaction.receipt_no|default:"-" }}</td>
+                        <td class="px-6 py-4 text-right {% if transaction.transaction_type == 'income' %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if transaction.transaction_type == 'expense' %}-{% endif %}
+                            रु. {{ transaction.amount }}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {% if transaction.image %}
+                                {% if transaction.image.url|lower|endswith:'.pdf' %}
+                                    <a href="{{ transaction.image.url }}" 
+                                       class="text-orange-600 hover:text-orange-700 inline-flex items-center gap-1"
+                                       target="_blank">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                  d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                        </svg>
+                                        <span>PDF</span>
+                                    </a>
+                                {% else %}
+                                    <a href="{{ transaction.image.url }}" 
+                                       target="_blank"
+                                       class="block w-10 h-10 mx-auto">
+                                        <img src="{{ transaction.image.url }}" 
+                                             alt="Transaction image" 
+                                             class="w-full h-full object-cover rounded">
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
                 {% empty %}
                 <tr>
                     <td colspan="5" class="px-6 py-4 text-center text-gray-500">
