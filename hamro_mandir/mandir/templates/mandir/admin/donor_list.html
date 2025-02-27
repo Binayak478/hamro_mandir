@@ -1,5 +1,4 @@
 {% extends 'mandir/admin/base_admin.html' %}
-{% load custom_filters %}
 
 {% block admin_content %}
 <div class="space-y-6">
@@ -21,7 +20,6 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ठेगाना</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">फोन</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">रकम</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">तस्विर/फाइल</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">कार्य</th>
                 </tr>
             </thead>
@@ -33,31 +31,6 @@
                     <td class="px-6 py-4">{{ donor.address }}</td>
                     <td class="px-6 py-4">{{ donor.phone }}</td>
                     <td class="px-6 py-4 text-right">रु. {{ donor.amount }}</td>
-                    <td class="px-6 py-4 text-center">
-                        {% if donor.image %}
-                            {% if donor.image.url|lower|endswith:'.pdf' %}
-                                <a href="{{ donor.image.url }}" 
-                                   class="text-orange-600 hover:text-orange-700 inline-flex items-center gap-1"
-                                   target="_blank">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                                    </svg>
-                                    <span>PDF</span>
-                                </a>
-                            {% else %}
-                                <a href="{{ donor.image.url }}" 
-                                   target="_blank"
-                                   class="block w-10 h-10 mx-auto">
-                                    <img src="{{ donor.image.url }}" 
-                                         alt="donor image" 
-                                         class="w-full h-full object-cover rounded">
-                                </a>
-                            {% endif %}
-                        {% else %}
-                            <span class="text-gray-400">-</span>
-                        {% endif %}
-                    </td>
                     <td class="px-6 py-4 text-right space-x-3">
                         <a href="{% url 'mandir:admin_donor_update' donor.pk %}" 
                            class="text-indigo-600 hover:text-indigo-900">सम्पादन</a>
